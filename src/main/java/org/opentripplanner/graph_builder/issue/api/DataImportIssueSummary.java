@@ -4,6 +4,7 @@ import static org.opentripplanner.graph_builder.issue.api.DataImportIssueStore.I
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
@@ -14,6 +15,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import okhttp3.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -37,8 +49,6 @@ public class DataImportIssueSummary implements Serializable {
         .map(DataImportIssue::getType)
         .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-    logSummary();
-
     this.geometries =
       issues
         .stream()
@@ -49,11 +59,9 @@ public class DataImportIssueSummary implements Serializable {
             Collectors.mapping(DataImportIssue::getGeometry, Collectors.toList())
           )
         );
-
-    logGeometries();
   }
 
-  private void logGeometries() {
+  public void logGeometries() {
     List<String> features = new ArrayList<>();
     int id = 1;
 
@@ -72,9 +80,20 @@ public class DataImportIssueSummary implements Serializable {
 
     // Log the complete GeoJSON representation
     if (featureCollection != null) {
-      try (FileWriter file = new FileWriter("OTPIssues.json")) {
-        file.write(featureCollection);
-        ISSUE_LOG.info("written to file");
+      File tempFile = new File("otpissues.json");
+      try {
+        // Write the featureCollection to the temporary file
+        try (FileWriter fileWriter = new FileWriter(tempFile)) {
+          fileWriter.write(featureCollection);
+        }
+
+        // Make the POST request using the temporary file
+        try {
+          String response = fetch(tempFile);
+          ISSUE_LOG.info("Response: " + response);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -83,12 +102,36 @@ public class DataImportIssueSummary implements Serializable {
     }
   }
 
+  public static String fetch(File file) throws IOException {
+    OkHttpClient client = new OkHttpClient().newBuilder().build();
+    MediaType mediaType = MediaType.parse("text/plain");
+    RequestBody body = new MultipartBody.Builder()
+      .setType(MultipartBody.FORM)
+      .addFormDataPart("overwrite_existing_layer", "True")
+      .addFormDataPart(
+        "base_file",
+        file.getName(),
+        RequestBody.create(MediaType.parse("application/octet-stream"), file)
+      )
+      .build();
+    Request request = new Request.Builder()
+      .url("https://geo4.stage.511mobility.org/api/v2/uploads/upload")
+      .method("POST", body)
+      .addHeader("Authorization", "Basic SmVzc2VAZXRjaGdpcy5jb206Z2VvTmFyZHM=")
+      .addHeader("Cookie", "sessionid=jl5n6scanmc311g90csshvd7h94m4jhf")
+      .build();
+    try (Response response = client.newCall(request).execute()) {
+      if (!response.isSuccessful()) {
+        throw new IOException("Unexpected response code " + response);
+      }
+      return response.body().string();
+    }
+  }
+
   public static JsonObject extractGeometry(String wktString) {
-    // Create a WKTReader
     WKTReader wktReader = new WKTReader();
 
     try {
-      // Parse the WKT string into a Geometry object
       Geometry geometry = wktReader.read(wktString);
 
       // Get coordinates from the Geometry object
