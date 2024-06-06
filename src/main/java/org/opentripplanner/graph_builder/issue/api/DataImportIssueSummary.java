@@ -40,7 +40,7 @@ public class DataImportIssueSummary implements Serializable {
 
   private static final Logger ISSUE_LOG = LoggerFactory.getLogger(ISSUES_LOG_NAME);
   private final Map<String, Long> summary;
-  private final Map<String, List<Geometry>> geometries;
+  private final Map<String, List<DataImportIssue>> issuesByType;
 
   public DataImportIssueSummary(List<DataImportIssue> issues) {
     this.summary =
@@ -49,29 +49,29 @@ public class DataImportIssueSummary implements Serializable {
         .map(DataImportIssue::getType)
         .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-    this.geometries =
-      issues
-        .stream()
-        .filter(issue -> issue.getGeometry() != null)
-        .collect(
-          Collectors.groupingBy(
-            DataImportIssue::getType,
-            Collectors.mapping(DataImportIssue::getGeometry, Collectors.toList())
-          )
-        );
+    this.issuesByType =
+      issues.stream().collect(Collectors.groupingBy(DataImportIssue::getType, Collectors.toList()));
   }
 
   public void logGeometries() {
     List<String> features = new ArrayList<>();
     int id = 1;
 
-    for (Map.Entry<String, List<Geometry>> entry : geometries.entrySet()) {
+    for (Map.Entry<String, List<DataImportIssue>> entry : issuesByType.entrySet()) {
       String issueType = entry.getKey();
-      List<Geometry> geometryList = entry.getValue();
+      List<DataImportIssue> issueList = entry.getValue();
 
-      for (Geometry geometry : geometryList) {
-        String feature = createFeature(geometry, issueType, id++);
-        features.add(feature);
+      for (DataImportIssue issue : issueList) {
+        if (issue.getGeometry() != null) {
+          String feature = createFeature(
+            issue.getGeometry(),
+            issueType,
+            issue.getMessage(),
+            issue.getPriority(),
+            id++
+          );
+          features.add(feature);
+        }
       }
     }
 
@@ -160,7 +160,13 @@ public class DataImportIssueSummary implements Serializable {
     }
   }
 
-  private String createFeature(Geometry geometry, String issueType, int id) {
+  private String createFeature(
+    Geometry geometry,
+    String issueType,
+    String message,
+    int priority,
+    int id
+  ) {
     StringBuilder featureBuilder = new StringBuilder();
     featureBuilder.append("{");
     featureBuilder.append("\"type\": \"Feature\",");
@@ -170,10 +176,13 @@ public class DataImportIssueSummary implements Serializable {
 
     // Create properties object
     featureBuilder.append("\"properties\": {");
-    featureBuilder.append("\"issueType\": \"").append(issueType).append("\"");
+    featureBuilder.append("\"issueType\": \"").append(issueType).append("\",");
+    featureBuilder.append("\"message\": \"").append(message).append("\"");
+    featureBuilder.append("\"priority\": \"").append(priority).append("\"");
     featureBuilder.append("}");
     featureBuilder.append("}");
 
+    ISSUE_LOG.info(featureBuilder.toString());
     return featureBuilder.toString();
   }
 
@@ -199,10 +208,10 @@ public class DataImportIssueSummary implements Serializable {
 
   private DataImportIssueSummary(
     Map<String, Long> summary,
-    Map<String, List<Geometry>> geometries
+    Map<String, List<DataImportIssue>> issuesByType
   ) {
     this.summary = Map.copyOf(summary);
-    this.geometries = Map.copyOf(geometries);
+    this.issuesByType = Map.copyOf(issuesByType);
   }
 
   /**
@@ -220,20 +229,20 @@ public class DataImportIssueSummary implements Serializable {
         combinedSummary.merge(type, count, Long::sum);
       });
 
-    var combinedGeometries = new HashMap<>(first.geometries);
-    second.geometries.forEach((type, geomList) -> {
-      combinedGeometries.merge(
+    var combinedIssues = new HashMap<>(first.issuesByType);
+    second.issuesByType.forEach((type, issueList) -> {
+      combinedIssues.merge(
         type,
-        geomList,
+        issueList,
         (firstList, secondList) -> {
-          List<Geometry> combinedList = new ArrayList<>(firstList);
+          List<DataImportIssue> combinedList = new ArrayList<>(firstList);
           combinedList.addAll(secondList);
           return combinedList;
         }
       );
     });
 
-    return new DataImportIssueSummary(combinedSummary, combinedGeometries);
+    return new DataImportIssueSummary(combinedSummary, combinedIssues);
   }
 
   public static DataImportIssueSummary empty() {
