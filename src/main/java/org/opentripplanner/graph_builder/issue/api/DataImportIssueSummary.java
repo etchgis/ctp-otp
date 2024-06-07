@@ -177,12 +177,11 @@ public class DataImportIssueSummary implements Serializable {
     // Create properties object
     featureBuilder.append("\"properties\": {");
     featureBuilder.append("\"issueType\": \"").append(issueType).append("\",");
-    featureBuilder.append("\"message\": \"").append(message).append("\"");
-    featureBuilder.append("\"priority\": \"").append(priority).append("\"");
+    featureBuilder.append("\"message\": \"").append(message).append("\",");
+    featureBuilder.append("\"priority\": ").append(priority);
     featureBuilder.append("}");
     featureBuilder.append("}");
 
-    ISSUE_LOG.info(featureBuilder.toString());
     return featureBuilder.toString();
   }
 
