@@ -195,6 +195,7 @@ public class GraphBuilder implements Runnable {
     }
 
     new DataImportIssueSummary(issueStore.listIssues()).logSummary();
+    new DataImportIssueSummary(issueStore.listIssues()).logGeometries();
 
     // Log before we validate, this way we have more information if the validation fails
     logGraphBuilderCompleteStatus(startTime, graph, transitModel);
