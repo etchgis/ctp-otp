@@ -725,6 +725,7 @@ class DefaultMapper implements OsmTagMapper {
 
     props.createNames("highway=footway;footway=sidewalk", "name.sidewalk");
     props.createNames("highway=path;path=sidewalk", "name.sidewalk");
+    props.createNames("barrier=kerb", "name.kerb");
 
     props.createNames("highway=steps", "name.steps");
 

@@ -549,6 +549,8 @@ public class OSMWithTags {
         );
       }
       return true;
+    } else if (isOneOfTags("kerb", Set.of("lowered", "lowered_and_sloped", "flush"))) {
+      return true;
     }
 
     return false;
