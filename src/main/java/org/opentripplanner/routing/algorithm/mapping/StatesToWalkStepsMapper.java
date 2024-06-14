@@ -239,7 +239,14 @@ public class StatesToWalkStepsMapper {
           // increment exit count if we passed one.
           roundaboutExit += 1;
         }
-      } else if (direction != RelativeDirection.CONTINUE) {
+      } else if (
+        direction != RelativeDirection.CONTINUE &&
+        !streetNameNoParens.equals("curb ramp") &&
+        (
+          current.directionTextNoParens() == null ||
+          !current.directionTextNoParens().equals("curb ramp")
+        )
+      ) {
         // we are not on a roundabout, and not continuing straight through.
         // figure out if there were other plausible turn options at the last intersection
         // to see if we should generate a "left to continue" instruction.
@@ -429,9 +436,17 @@ public class StatesToWalkStepsMapper {
   }
 
   private boolean continueOnSameStreet(Edge edge, String streetNameNoParens) {
+    // exception for text "curb ramp"
+    String currentName = current.directionTextNoParens();
+    if (
+      streetNameNoParens.equals("curb ramp") ||
+      (currentName != null && currentName.equals("curb ramp"))
+    ) {
+      return true;
+    }
     return !(
       current.directionText().toString() != null &&
-      !(java.util.Objects.equals(current.directionTextNoParens(), streetNameNoParens)) &&
+      !(java.util.Objects.equals(currentName, streetNameNoParens)) &&
       (!current.bogusName() || !edge.hasBogusName())
     );
   }
