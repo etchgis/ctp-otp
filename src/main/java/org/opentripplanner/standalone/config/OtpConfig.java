@@ -49,6 +49,7 @@ public class OtpConfig {
    * This parameter is optional, and the default is {@code null}.
    */
   public final String configVersion;
+  public final String authentication;
 
   public OtpConfig(NodeAdapter nodeAdapter, boolean logUnusedParams) {
     this.root = nodeAdapter;
@@ -66,6 +67,8 @@ public class OtpConfig {
         .since(V2_0)
         .summary("Turn features on/off.")
         .asEnumMap(OTPFeature.class, Boolean.class);
+    this.authentication =
+      root.of("authentication").since(V2_0).summary("Authentication for GeoNode.").asString(null);
 
     if (logUnusedParams && LOG.isWarnEnabled()) {
       root.logAllWarnings(LOG::warn);
