@@ -38,6 +38,11 @@ public class ConfigModel {
   private final OtpConfig otpConfig;
 
   /**
+   * Varaible to be used for GeoNode authentication.
+   */
+  private static String auth;
+
+  /**
    * The build-config in NOT final because it can be set from the embedded graph.obj build-config
    * after the graph is loaded.
    */
@@ -53,6 +58,8 @@ public class ConfigModel {
     this.otpConfig = otpConfig;
     this.buildConfig = buildConfig;
     this.routerConfig = routerConfig;
+
+    auth = this.otpConfig.authentication;
 
     initializeOtpFeatures(otpConfig);
   }
@@ -75,6 +82,13 @@ public class ConfigModel {
       this.buildConfig.configVersion,
       this.routerConfig.getConfigVersion()
     );
+  }
+
+  /**
+   * Get authentication from otp-config.json
+   */
+  public static String getAuth() {
+    return auth;
   }
 
   /**

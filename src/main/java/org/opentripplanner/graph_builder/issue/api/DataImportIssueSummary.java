@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +31,8 @@ import org.apache.http.util.EntityUtils;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+import org.opentripplanner.standalone.config.ConfigModel;
+import org.opentripplanner.standalone.config.OtpConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +107,11 @@ public class DataImportIssueSummary implements Serializable {
   }
 
   public static String fetch(File file) throws IOException {
+    //    String configPath = System.getProperty("config.path");
+    //    String content = new String(Files.readAllBytes(Paths.get(configPath)));
+    //    JSONObject config = new JSONObject(content);
+    String authenticationValue = ConfigModel.getAuth();
+
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("text/plain");
     RequestBody body = new MultipartBody.Builder()
@@ -117,7 +126,7 @@ public class DataImportIssueSummary implements Serializable {
     Request request = new Request.Builder()
       .url("https://geo4.stage.511mobility.org/api/v2/uploads/upload")
       .method("POST", body)
-      .addHeader("Authorization", "Basic SmVzc2VAZXRjaGdpcy5jb206Z2VvTmFyZHM=")
+      .addHeader("Authorization", authenticationValue)
       .addHeader("Cookie", "sessionid=jl5n6scanmc311g90csshvd7h94m4jhf")
       .build();
     try (Response response = client.newCall(request).execute()) {
@@ -176,7 +185,7 @@ public class DataImportIssueSummary implements Serializable {
 
     // Create properties object
     featureBuilder.append("\"properties\": {");
-    featureBuilder.append("\"issueType\": \"").append(issueType).append("\",");
+    featureBuilder.append("\"issue_type\": \"").append(issueType).append("\",");
     featureBuilder.append("\"message\": \"").append(message).append("\",");
     featureBuilder.append("\"priority\": ").append(priority);
     featureBuilder.append("}");
