@@ -6,7 +6,7 @@ First, read the [Developer's Guide](https://docs.opentripplanner.org/en/latest/D
 
 0. Etch recommends having the Temurin JDK installed, you can do this with Brew on macOS:
 ```sh
-brew install --cask temurin21
+brew install --cask temurin@21
 ```
 1. Download [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/) from JetBrains.
 2. Open the code folder, wait for indexing to complete.
