@@ -46,6 +46,10 @@ public final class DirectionUtils {
       coord0 = line.getCoordinateN(i--);
     }
 
+    // Get angle of segment that is not super close to the end to avoid including
+    // zags at the end of the line string.
+    coord1 = line.getCoordinateN(i + 2);
+
     double az = getAzimuth(coord0, coord1);
     return az * Math.PI / 180;
   }
@@ -74,6 +78,10 @@ public final class DirectionUtils {
     ) {
       coord1 = line.getCoordinateN(i++);
     }
+
+    // Get angle of segment that is not super close to the start to avoid including
+    // zags at the start of the line string.
+    coord0 = line.getCoordinateN(i - 2);
 
     double az = getAzimuth(coord0, coord1);
     return az * Math.PI / 180;

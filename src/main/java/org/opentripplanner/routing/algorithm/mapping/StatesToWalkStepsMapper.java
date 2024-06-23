@@ -41,6 +41,11 @@ public class StatesToWalkStepsMapper {
    */
   private static final double MAX_ZAG_DISTANCE = 30;
 
+  /**
+   * Steps that are very small will be hard to navigate using GPS.
+   */
+  private static final double MIN_STEP_DISTANCE = 5;
+
   private final double ellipsoidToGeoidDifference;
   private final StreetNotesService streetNotesService;
 
@@ -243,16 +248,16 @@ public class StatesToWalkStepsMapper {
         // we are not on a roundabout, and not continuing straight through.
         // figure out if there were other plausible turn options at the last intersection
         // to see if we should generate a "left to continue" instruction.
-        if (isPossibleToTurnToOtherStreet(backState, edge, streetName, thisAngle)) {
-          // turn to stay on same-named street
-          current = createWalkStep(forwardState, backState);
-          createdNewStep = true;
-          current.withDirections(lastAngle, thisAngle, false);
-          current.withStayOn(true);
-          steps.add(current);
-          // new step, set distance to length of first edge
-          distance = edge.getDistanceMeters();
-        }
+        // if (isPossibleToTurnToOtherStreet(backState, edge, streetName, thisAngle)) {
+        // turn to stay on same-named street
+        current = createWalkStep(forwardState, backState);
+        createdNewStep = true;
+        current.withDirections(lastAngle, thisAngle, false);
+        current.withStayOn(true);
+        steps.add(current);
+        // new step, set distance to length of first edge
+        distance = edge.getDistanceMeters();
+        // }
       }
     }
 
@@ -261,28 +266,50 @@ public class StatesToWalkStepsMapper {
     if (createdNewStep && !modeTransition) {
       // check last three steps for zag
       int lastIndex = steps.size() - 1;
-      if (lastIndex >= 2) {
-        WalkStepBuilder threeBack = steps.get(lastIndex - 2);
-        WalkStepBuilder twoBack = steps.get(lastIndex - 1);
-        WalkStepBuilder lastStep = steps.get(lastIndex);
-        boolean isOnSameStreet = lastStep
-          .directionTextNoParens()
-          .equals(threeBack.directionTextNoParens());
-        if (twoBack.distance() < MAX_ZAG_DISTANCE && isOnSameStreet) {
-          if (isUTurn(twoBack, lastStep)) {
-            steps.remove(lastIndex - 1);
-            processUTurn(lastStep, twoBack);
-          } else {
-            // total hack to remove zags.
-            steps.remove(lastIndex);
-            steps.remove(lastIndex - 1);
-            removeZag(threeBack, twoBack);
-          }
+      boolean wasRemoved = false;
+      // if (lastIndex >= 2) {
+      //   WalkStepBuilder threeBack = steps.get(lastIndex - 2);
+      //   WalkStepBuilder twoBack = steps.get(lastIndex - 1);
+      //   WalkStepBuilder lastStep = steps.get(lastIndex);
+      //   boolean isOnSameStreet = lastStep
+      //     .directionTextNoParens()
+      //     .equals(threeBack.directionTextNoParens());
+      //   if (twoBack.distance() < MAX_ZAG_DISTANCE && isOnSameStreet) {
+      //     if (isUTurn(twoBack, lastStep)) {
+      //       steps.remove(lastIndex - 1);
+      //       processUTurn(lastStep, twoBack);
+      //     } else {
+      //       // total hack to remove zags.
+      //       steps.remove(lastIndex);
+      //       steps.remove(lastIndex - 1);
+      //       removeZag(threeBack, twoBack);
+      //     }
+      //     wasRemoved = true;
+      //   }
+      // }
+
+      // remove prior step if it was too short
+      if (!wasRemoved && lastIndex > 0) {
+        WalkStepBuilder twoBackStep = steps.get(lastIndex - 1);
+        if (twoBackStep.distance() < MIN_STEP_DISTANCE) {
+          steps.remove(lastIndex - 1);
+          removePriorStep(twoBackStep);
         }
       }
     } else {
       if (!createdNewStep && current.elevationProfile() != null) {
         updateElevationProfile(backState, edge);
+      }
+      // this is a continuation of the current step, if the step up to
+      // now is not long enough, use this edge's direction.
+      if (current.relativeDirection() != RelativeDirection.DEPART && distance < MIN_STEP_DISTANCE) {
+        double thisAngle = DirectionUtils.getFirstAngle(geom);
+        RelativeDirection direction = RelativeDirection.calculate(
+          lastAngle,
+          thisAngle,
+          edge.isRoundabout()
+        );
+        current.withRelativeDirection(direction);
       }
       distance += edge.getDistanceMeters();
     }
@@ -291,7 +318,9 @@ public class StatesToWalkStepsMapper {
     current
       .addDistance(edge.getDistanceMeters())
       .addStreetNotes(streetNotesService.getNotes(forwardState));
-    lastAngle = DirectionUtils.getLastAngle(geom);
+    if (distance >= MIN_STEP_DISTANCE) {
+      lastAngle = DirectionUtils.getLastAngle(geom);
+    }
 
     current.addEdge(edge);
   }
@@ -335,6 +364,22 @@ public class StatesToWalkStepsMapper {
     current = threeBack;
     current.addDistance(twoBack.distance());
     distance += current.distance();
+    if (twoBack.elevationProfile() != null) {
+      if (current.elevationProfile() == null) {
+        current.addElevation(twoBack.elevationProfile());
+      } else {
+        current.addElevation(twoBack.elevationProfile().transformX(current.distance()));
+      }
+    }
+  }
+
+  private void removePriorStep(WalkStepBuilder twoBack) {
+    current.addDistance(twoBack.distance());
+    distance += twoBack.distance();
+    if (twoBack.relativeDirection() == RelativeDirection.DEPART) {
+      current.withRelativeDirection(RelativeDirection.DEPART);
+    }
+    current.withStartLocation(twoBack.startLocation());
     if (twoBack.elevationProfile() != null) {
       if (current.elevationProfile() == null) {
         current.addElevation(twoBack.elevationProfile());
@@ -431,8 +476,8 @@ public class StatesToWalkStepsMapper {
   private boolean continueOnSameStreet(Edge edge, String streetNameNoParens) {
     return !(
       current.directionText().toString() != null &&
-      !(java.util.Objects.equals(current.directionTextNoParens(), streetNameNoParens)) &&
-      (!current.bogusName() || !edge.hasBogusName())
+      !(java.util.Objects.equals(current.directionTextNoParens(), streetNameNoParens)) // &&
+      // (!current.bogusName() || !edge.hasBogusName())
     );
   }
 

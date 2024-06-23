@@ -140,6 +140,10 @@ public class WalkStepBuilder {
     return directionText;
   }
 
+  public WgsCoordinate startLocation() {
+    return startLocation;
+  }
+
   public boolean bogusName() {
     return bogusName;
   }
