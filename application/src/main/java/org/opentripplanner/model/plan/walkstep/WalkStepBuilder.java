@@ -159,6 +159,14 @@ public class WalkStepBuilder {
     return nameIsDerived;
   }
 
+  public WgsCoordinate startLocation() {
+    return startLocation;
+  }
+
+  public boolean bogusName() {
+    return bogusName;
+  }
+
   public RelativeDirection relativeDirection() {
     return relativeDirection;
   }
