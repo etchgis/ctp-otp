@@ -66,6 +66,7 @@ public class LegacyRouteRequestMapper {
     callWith.argument("numItineraries", request::withNumItineraries);
     callWith.argument("searchWindow", (Long m) -> request.withSearchWindow(Duration.ofSeconds(m)));
     callWith.argument("pageCursor", request::withPageCursorFromEncoded);
+    callWith.argument("precision", request::setPrecision);
 
     request.withPreferences(preferences -> {
       preferences.withBike(bike -> {

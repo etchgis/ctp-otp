@@ -157,7 +157,7 @@ public class LegType {
           .name("pointsOnLink")
           .description("The leg's geometry.")
           .type(linkGeometryType)
-          .dataFetcher(env -> EncodedPolyline.encode(leg(env).legGeometry()))
+          .dataFetcher(env -> EncodedPolyline.encode(leg(env).legGeometry(), 5))
           .build()
       )
       .field(

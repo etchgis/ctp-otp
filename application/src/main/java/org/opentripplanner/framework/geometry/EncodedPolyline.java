@@ -11,7 +11,7 @@ import org.locationtech.jts.geom.Geometry;
  */
 
 public record EncodedPolyline(String points, int length) implements Serializable {
-  public static EncodedPolyline encode(Geometry geometry) {
-    return PolylineEncoder.encodeGeometry(geometry);
+  public static EncodedPolyline encode(Geometry geometry, int precision) {
+    return PolylineEncoder.encodeGeometry(geometry, precision);
   }
 }

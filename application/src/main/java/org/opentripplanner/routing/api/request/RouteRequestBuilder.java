@@ -41,6 +41,7 @@ public class RouteRequestBuilder implements Serializable {
   JourneyRequest journey;
   RoutingPreferences preferences;
   int numItineraries;
+  int precision;
   boolean defaultRequest;
 
   private final RouteRequest original;
@@ -60,6 +61,7 @@ public class RouteRequestBuilder implements Serializable {
     this.journey = original.journey();
     this.preferences = original.preferences();
     this.numItineraries = original.numItineraries();
+    this.precision = original.precision();
     this.defaultRequest = original.isDefaultRequest();
   }
 
@@ -150,6 +152,11 @@ public class RouteRequestBuilder implements Serializable {
 
   public RouteRequestBuilder withNumItineraries(int numItineraries) {
     this.numItineraries = numItineraries;
+    return this;
+  }
+
+  public RouteRequestBuilder setPrecision(int precision) {
+    this.precision = precision;
     return this;
   }
 

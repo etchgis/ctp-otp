@@ -33,6 +33,7 @@ and in the [transferRequests in build-config.json](BuildConfiguration.md#transfe
 | nonpreferredTransferPenalty                                                                                  |        `integer`       | Penalty (in seconds) for using a non-preferred transfer.                                                                                                 | *Optional* | `180`            |  2.0  |
 | numItineraries                                                                                               |        `integer`       | The maximum number of itineraries to return.                                                                                                             | *Optional* | `50`             |  2.0  |
 | [otherThanPreferredRoutesPenalty](#rd_otherThanPreferredRoutesPenalty)                                       |        `integer`       | Penalty added for using every route that is not preferred if user set any route as preferred.                                                            | *Optional* | `300`            |  2.0  |
+| [precision](#rd_precision)                                                                                   |        `integer`       | The precision of the result coordinates.                                                                                                                 | *Optional* | `5`              |  2.0  |
 | [relaxTransitGroupPriority](#rd_relaxTransitGroupPriority)                                                   |        `string`        | The relax function for transit-group-priority                                                                                                            | *Optional* | `"0s + 1.00 t"`  |  2.5  |
 | [relaxTransitSearchGeneralizedCostAtDestination](#rd_relaxTransitSearchGeneralizedCostAtDestination)         |        `double`        | Whether non-optimal transit paths at the destination should be returned                                                                                  | *Optional* |                  |  2.3  |
 | [searchWindow](#rd_searchWindow)                                                                             |       `duration`       | The duration of the search-window.                                                                                                                       | *Optional* |                  |  2.0  |
@@ -288,6 +289,17 @@ search, hence, making it a bit slower. Recommended values would be from 12 hours
 Penalty added for using every route that is not preferred if user set any route as preferred.
 
 We return number of seconds that we are willing to wait for preferred route.
+
+<h3 id="rd_precision">precision</h3>
+
+**Since version:** `2.0` ∙ **Type:** `integer` ∙ **Cardinality:** `Optional` ∙ **Default value:** `5`   
+**Path:** /routingDefaults 
+
+The precision of the result coordinates.
+
+The precision of the result coordinates. The default value is 5, which makes geometry choppy when
+zoomed in close.
+
 
 <h3 id="rd_relaxTransitGroupPriority">relaxTransitGroupPriority</h3>
 

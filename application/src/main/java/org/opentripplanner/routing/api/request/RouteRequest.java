@@ -66,6 +66,7 @@ public class RouteRequest implements Serializable {
   private final JourneyRequest journey;
   private final RoutingPreferences preferences;
   private final int numItineraries;
+  private final int precision;
   private final boolean defaultRequest;
 
   /* CONSTRUCTORS */
@@ -85,6 +86,7 @@ public class RouteRequest implements Serializable {
     this.journey = JourneyRequest.DEFAULT;
     this.preferences = RoutingPreferences.DEFAULT;
     this.numItineraries = DEFAULT_NUM_ITINERARIES;
+    this.precision = 5;
     this.defaultRequest = true;
   }
 
@@ -106,6 +108,7 @@ public class RouteRequest implements Serializable {
     this.journey = builder.journey;
     this.preferences = builder.preferences;
     this.numItineraries = builder.numItineraries;
+    this.precision = builder.precision;
     this.defaultRequest = builder.defaultRequest;
 
     validate();
@@ -399,6 +402,14 @@ public class RouteRequest implements Serializable {
     return numItineraries;
   }
 
+  /**
+   * The precision of the result coordinates. The default value is 5, which makes geometry choppy when
+   * zoomed in close.
+   */
+  public int precision() {
+    return precision;
+  }
+
   boolean isDefaultRequest() {
     return defaultRequest;
   }
@@ -418,6 +429,7 @@ public class RouteRequest implements Serializable {
       arriveBy == other.arriveBy &&
       timetableView == other.timetableView &&
       numItineraries == other.numItineraries &&
+      precision == other.precision &&
       Objects.equals(from, other.from) &&
       Objects.equals(to, other.to) &&
       Objects.equals(via, other.via) &&
@@ -446,7 +458,8 @@ public class RouteRequest implements Serializable {
       pageCursor,
       journey,
       preferences,
-      numItineraries
+      numItineraries,
+      precision
     );
   }
 
@@ -462,6 +475,7 @@ public class RouteRequest implements Serializable {
       .addDuration("maxSearchWindow", maxSearchWindow)
       .addDateTime("bookingTime", bookingTime)
       .addNum("numItineraries", numItineraries, DEFAULT_NUM_ITINERARIES)
+      .addNum("precision", precision, 5)
       .addObj("preferences", preferences, RoutingPreferences.DEFAULT)
       .addObj("journey", journey, JourneyRequest.DEFAULT)
       .toString();

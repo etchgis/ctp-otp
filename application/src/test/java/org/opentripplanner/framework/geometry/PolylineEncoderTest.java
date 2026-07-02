@@ -16,7 +16,7 @@ public class PolylineEncoderTest {
     points.add(new Coordinate(-73.85062, 40.903125, Double.NaN));
     points.add(new Coordinate(-73.85136, 40.902261, Double.NaN));
     points.add(new Coordinate(-73.85151, 40.902066, Double.NaN));
-    EncodedPolyline eplb = PolylineEncoder.encodeCoordinates(points.toArray(new Coordinate[0]));
+    EncodedPolyline eplb = PolylineEncoder.encodeCoordinates(points.toArray(new Coordinate[0]), 5);
     assertEquals("o{sxFl}vaMjDpCf@\\", eplb.points());
     assertEquals(3, eplb.length());
   }
@@ -32,7 +32,7 @@ public class PolylineEncoderTest {
           new Coordinate(0, 0),
         }
       );
-    var polyline = PolylineEncoder.encodeGeometry(polygon);
+    var polyline = PolylineEncoder.encodeGeometry(polygon, 5);
 
     assertEquals("??_ibE_ibE_ibE_ibE~reK~reK", polyline.points());
   }
@@ -40,7 +40,7 @@ public class PolylineEncoderTest {
   @Test
   public void testPoint() {
     var point = GeometryUtils.getGeometryFactory().createPoint(new Coordinate(100, 100));
-    var polyline = PolylineEncoder.encodeGeometry(point);
+    var polyline = PolylineEncoder.encodeGeometry(point, 5);
 
     assertEquals("_gjaR_gjaR", polyline.points());
   }

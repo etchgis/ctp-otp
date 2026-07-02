@@ -113,7 +113,7 @@ public class JourneyPatternType {
             if (geometry == null) {
               return null;
             } else {
-              return EncodedPolyline.encode(geometry);
+              return EncodedPolyline.encode(geometry, 5);
             }
           })
           .build()

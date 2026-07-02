@@ -127,6 +127,20 @@ public class RouteRequestConfig {
         .asDuration(dft.searchWindow())
     );
 
+    requestBuilder.setPrecision(
+      c
+        .of("precision")
+        .since(V2_0)
+        .summary("The precision of the result coordinates.")
+        .description(
+          """
+          The precision of the result coordinates. The default value is 5, which makes geometry choppy when
+          zoomed in close.
+          """
+        )
+        .asInt(dft.precision())
+    );
+
     NodeAdapter unpreferred = c
       .of("unpreferred")
       .since(V2_2)
