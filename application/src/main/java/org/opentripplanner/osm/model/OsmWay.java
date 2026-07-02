@@ -32,6 +32,11 @@ public class OsmWay extends OsmEntity {
     return nodes;
   }
 
+  @Override
+  public String getOsmType() {
+    return "way";
+  }
+
   public String toString() {
     return "osm way " + id;
   }

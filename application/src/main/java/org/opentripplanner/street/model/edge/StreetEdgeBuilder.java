@@ -30,6 +30,8 @@ public class StreetEdgeBuilder<B extends StreetEdgeBuilder<B>> {
   private StreetVertex to;
   private LineString geometry;
   private I18NString name;
+  private String featureType;
+  private String featureId;
   private int millimeterLength;
   private StreetTraversalPermission permission;
   private boolean defaultLength;
@@ -103,6 +105,24 @@ public class StreetEdgeBuilder<B extends StreetEdgeBuilder<B>> {
 
   public B withName(String name) {
     this.name = new NonLocalizedString(name);
+    return instance();
+  }
+
+  public String featureType() {
+    return featureType;
+  }
+
+  public String featureId() {
+    return featureId;
+  }
+
+  public B withFeatureType(String type) {
+    this.featureType = type;
+    return instance();
+  }
+
+  public B withFeatureId(String id) {
+    this.featureId = id;
     return instance();
   }
 

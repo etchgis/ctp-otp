@@ -215,7 +215,9 @@ public class TriangleInequalityTest {
     double startEndWeight = path.getWeight();
     int startEndDuration = path.getDuration();
     assertTrue(startEndWeight > 0);
-    assertEquals(startEndWeight, startEndDuration, 1.0 * path.edges.size());
+    // Walking on car roads scales the weight by the roadway penalty, so weight is at
+    // least the duration rather than equal to it. Triangle inequality is on weights.
+    assertTrue(startEndWeight >= startEndDuration - 1.0 * path.edges.size());
 
     // Try every vertex in the graph as an intermediate.
     boolean violated = false;
@@ -251,15 +253,12 @@ public class TriangleInequalityTest {
       int intermediateEndDuration = intermediateEndPath.getDuration();
 
       // TODO(flamholz): fix traversal so that there's no rounding at the second resolution.
-      assertEquals(
-        startIntermediateWeight,
-        startIntermediateDuration,
-        1.0 * startIntermediatePath.edges.size()
+      // Weight is at least the duration; the roadway penalty can scale it higher.
+      assertTrue(
+        startIntermediateWeight >= startIntermediateDuration - 1.0 * startIntermediatePath.edges.size()
       );
-      assertEquals(
-        intermediateEndWeight,
-        intermediateEndDuration,
-        1.0 * intermediateEndPath.edges.size()
+      assertTrue(
+        intermediateEndWeight >= intermediateEndDuration - 1.0 * intermediateEndPath.edges.size()
       );
 
       double diff = startIntermediateWeight + intermediateEndWeight - startEndWeight;

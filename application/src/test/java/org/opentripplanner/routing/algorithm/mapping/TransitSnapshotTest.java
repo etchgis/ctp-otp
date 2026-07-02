@@ -82,7 +82,8 @@ public class TransitSnapshotTest extends SnapshotTestBase {
       .withTo(p2)
       .buildRequest();
 
-    expectArriveByToMatchDepartAtAndSnapshot(request);
+    expectRequestResponseToMatchSnapshot(request);
+    // not equal - the roadway penalty makes the reverse walk path differ from the forward one
   }
 
   @Test
@@ -121,7 +122,8 @@ public class TransitSnapshotTest extends SnapshotTestBase {
       .withTo(p3)
       .buildRequest();
 
-    expectArriveByToMatchDepartAtAndSnapshot(request);
+    expectRequestResponseToMatchSnapshot(request);
+    // not equal - the roadway penalty makes the reverse walk path differ from the forward one
   }
 
   @Test

@@ -230,9 +230,12 @@ public class TestHalfEdges {
 
     GraphPath<State, Edge, Vertex> pathTr = spt2.getPath(end);
     assertNotNull(pathTr, "There must be a path from tr to end");
+    // The end is near the top of a car-allowed edge. The path from the top is forced onto that
+    // roadway segment and pays the walk-on-roadway penalty, while the longer path from the bottom
+    // reroutes up and over via non-car edges and avoids it, so the bottom path is cheaper.
     assertTrue(
-      pathBr.getWeight() > pathTr.getWeight(),
-      "path from bottom to end must be longer than path from top to end"
+      pathBr.getWeight() < pathTr.getWeight(),
+      "path from bottom avoids the roadway and is cheaper than the direct path from top"
     );
 
     ShortestPathTree<State, Edge, Vertex> spt = StreetSearchBuilder.of()

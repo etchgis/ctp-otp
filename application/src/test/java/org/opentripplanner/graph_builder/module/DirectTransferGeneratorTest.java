@@ -361,7 +361,9 @@ class DirectTransferGeneratorTest extends GraphRoutingTest {
       tr(S0, 100, List.of(V0, V11), S11),
       tr(S0, 100, List.of(V0, V21), S21),
       tr(S11, 100, List.of(V11, V21), S21),
-      tr(S0, 200, List.of(V0, V12), S12),
+      // Walking on the direct V0-V12 road is penalized, so the walk transfer routes
+      // via the pedestrian edge V11-V12 instead, at the same 200m distance.
+      tr(S0, 200, List.of(V0, V11, V12), S12),
       tr(S11, 100, List.of(V11, V12), S12)
     );
     assertTransfers(
@@ -477,7 +479,9 @@ class DirectTransferGeneratorTest extends GraphRoutingTest {
       tr(S0, 100, List.of(V0, V11), S11),
       tr(S0, 100, List.of(V0, V21), S21),
       tr(S11, 100, List.of(V11, V21), S21),
-      tr(S0, 200, List.of(V0, V12), S12),
+      // Walking on the direct V0-V12 road is penalized, so the walk transfer routes
+      // via the pedestrian edge V11-V12 instead, at the same 200m distance.
+      tr(S0, 200, List.of(V0, V11, V12), S12),
       tr(S11, 100, List.of(V11, V12), S12)
     );
     assertTransfers(bikeTransfers);

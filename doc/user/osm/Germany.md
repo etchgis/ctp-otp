@@ -57,7 +57,7 @@ Lower safety values make an OSM way more desirable and higher values less desira
 | `highway=road`                                          | `ALL`                    |                               |             |
 | `highway=byway`                                         | `ALL`                    | 1.3                           |             |
 | `highway=track`                                         | `ALL`                    | 1.3                           |             |
-| `highway=service`                                       | `ALL`                    | 1.1                           |             |
+| `highway=service`                                       | `ALL`                    | 1.1                           | 20.0        |
 | `highway=residential`                                   | `ALL`                    | 0.98                          |             |
 | `highway=residential_link`                              | `ALL`                    | 0.98                          |             |
 | `highway=tertiary`                                      | `ALL`                    |                               |             |

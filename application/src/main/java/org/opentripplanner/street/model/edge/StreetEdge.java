@@ -51,6 +51,10 @@ public class StreetEdge
 
   private static final double SAFEST_STREETS_SAFETY_FACTOR = 0.1;
 
+  // Extra cost for walking or wheeling along an edge that also allows cars, to
+  // discourage routing pedestrians into the roadway when a sidewalk exists.
+  private static final double WALK_ON_ROADWAY_PENALTY = 20;
+
   /** If you have more than 16 flags, increase flags to short or int */
   static final int BACK_FLAG_INDEX = 0;
   static final int ROUNDABOUT_FLAG_INDEX = 1;
@@ -97,6 +101,9 @@ public class StreetEdge
 
   private I18NString name;
 
+  private String featureType;
+  private String featureId;
+
   private StreetTraversalPermission permission;
 
   /**
@@ -123,6 +130,8 @@ public class StreetEdge
     this.setBicycleSafetyFactor(builder.bicycleSafetyFactor());
     this.setWalkSafetyFactor(builder.walkSafetyFactor());
     this.name = builder.name();
+    this.featureType = builder.featureType();
+    this.featureId = builder.featureId();
     this.setPermission(builder.permission());
     this.carSpeed = builder.carSpeed();
     LineStringInOutAngles lineStringInOutAngles = LineStringInOutAngles.of(builder.geometry());
@@ -441,7 +450,14 @@ public class StreetEdge
     return BitSetUtils.get(flags, NAME_IS_DERIVED_FLAG_INDEX);
   }
 
-  @Override
+  public String getFeatureType() {
+    return this.featureType;
+  }
+
+  public String getFeatureId() {
+    return this.featureId;
+  }
+
   public LineString getGeometry() {
     return CompactLineStringUtils.uncompactLineString(
       fromv.getLon(),
@@ -757,6 +773,8 @@ public class StreetEdge
     seb.withBicycleSafetyFactor(bicycleSafetyFactor);
     seb.withWalkSafetyFactor(walkSafetyFactor);
     seb.withCarSpeed(carSpeed);
+    seb.withFeatureType(featureType);
+    seb.withFeatureId(featureId);
 
     var partialElevationProfileFromParent = ElevationUtils.getPartialElevationProfile(
       getElevationProfile(),
@@ -1163,6 +1181,11 @@ public class StreetEdge
         walkingBike,
         isStairs()
       );
+    }
+
+    // penalize walking or wheeling along an edge that allows cars
+    if (getPermission().allows(TraverseMode.CAR)) {
+      weight *= WALK_ON_ROADWAY_PENALTY;
     }
 
     return new TraversalCosts(time, weight);

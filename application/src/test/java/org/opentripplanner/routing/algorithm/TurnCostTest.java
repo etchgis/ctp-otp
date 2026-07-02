@@ -120,7 +120,7 @@ public class TurnCostTest {
   @Test
   public void testForwardDefaultNoTurnCosts() {
     // Without turn costs, this path costs 2x100 + 2x50 = 300.
-    checkForwardRouteDuration(proto, StreetMode.WALK, topRight, bottomLeft, 300);
+    checkForwardRouteDuration(proto, StreetMode.WALK, topRight, bottomLeft, 300, false);
   }
 
   @Test
@@ -134,7 +134,8 @@ public class TurnCostTest {
       StreetMode.WALK,
       topRight,
       bottomLeft,
-      330
+      330,
+      false
     );
 
     // The intersection traversal cost should be applied to the state *after*
@@ -163,7 +164,8 @@ public class TurnCostTest {
       StreetMode.CAR,
       topRight,
       bottomLeft,
-      350
+      350,
+      true
     );
 
     List<State> states = path.states;
@@ -187,7 +189,8 @@ public class TurnCostTest {
       StreetMode.CAR,
       topRight,
       bottomLeft,
-      380
+      380,
+      true
     );
 
     List<State> states = path.states;
@@ -211,7 +214,8 @@ public class TurnCostTest {
     StreetMode streetMode,
     Vertex from,
     Vertex to,
-    int expectedDuration
+    int expectedDuration,
+    boolean weightEqualsDuration
   ) {
     ShortestPathTree<State, Edge, Vertex> tree = StreetSearchBuilder.of()
       .setHeuristic(new EuclideanRemainingWeightHeuristic())
@@ -227,11 +231,14 @@ public class TurnCostTest {
     // Without turn costs, this path costs 2x100 + 2x50 = 300.
     assertEquals(expectedDuration, path.getDuration());
 
-    // Weight == duration when reluctances == 0.
-    assertEquals(expectedDuration, (int) path.getWeight());
+    // Weight equals duration only when the roadway penalty does not apply, that is
+    // for driving. Walking on car roads scales the weight by the roadway penalty.
+    if (weightEqualsDuration) {
+      assertEquals(expectedDuration, (int) path.getWeight());
 
-    for (State s : path.states) {
-      assertEquals(s.getElapsedTimeSeconds(), (int) s.getWeight());
+      for (State s : path.states) {
+        assertEquals(s.getElapsedTimeSeconds(), (int) s.getWeight());
+      }
     }
 
     return path;

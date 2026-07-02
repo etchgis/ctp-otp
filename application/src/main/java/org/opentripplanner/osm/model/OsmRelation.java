@@ -15,6 +15,11 @@ public class OsmRelation extends OsmEntity {
     return members;
   }
 
+  @Override
+  public String getOsmType() {
+    return "relation";
+  }
+
   public String toString() {
     return "osm relation " + id;
   }

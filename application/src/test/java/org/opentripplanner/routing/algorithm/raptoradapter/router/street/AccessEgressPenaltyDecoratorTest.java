@@ -43,9 +43,9 @@ class AccessEgressPenaltyDecoratorTest {
 
   @BeforeAll
   static void verifyTestSetup() {
-    assertEquals("Walk 2m15s C₁238_035 w/penalty(13m23s $1606) ~ 1", EXP_WALK_W_PENALTY.toString());
+    assertEquals("Walk 2m15s C₁4_730_197 w/penalty(13m23s $1606) ~ 1", EXP_WALK_W_PENALTY.toString());
     assertEquals(
-      "Walk 45s C₁237_887 w/penalty(11m8s $1336) ~ 1",
+      "Walk 45s C₁4_730_049 w/penalty(11m8s $1336) ~ 1",
       EXP_CAR_RENTAL_W_PENALTY.toString()
     );
   }

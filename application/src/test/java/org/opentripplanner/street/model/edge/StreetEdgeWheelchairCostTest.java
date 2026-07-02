@@ -29,23 +29,23 @@ class StreetEdgeWheelchairCostTest {
   static Stream<Arguments> slopeCases() {
     return Stream.of(
       // no extra cost
-      Arguments.of(0.07, 1, 5081),
+      Arguments.of(0.07, 1, 101632),
       // no extra cost
-      Arguments.of(0.08, 1, 5945),
+      Arguments.of(0.08, 1, 118908),
       // no extra cost
-      Arguments.of(0.09, 1, 6908),
+      Arguments.of(0.09, 1, 138165),
       // 0.1 % above the max slope, tiny extra cost
-      Arguments.of(0.091, 1, 7708),
+      Arguments.of(0.091, 1, 154177),
       // 3 % above max slope, will incur very large cost
-      Arguments.of(0.091, 3, 9110),
+      Arguments.of(0.091, 3, 182209),
       // 0.1 % above the max slope, but high reluctance will large cost
-      Arguments.of(0.0915, 1, 8116),
+      Arguments.of(0.0915, 1, 162335),
       // 2 % above max slope, but lowered reluctance
-      Arguments.of(0.11, 0.5, 17649),
+      Arguments.of(0.11, 0.5, 352990),
       // 2 % above max slope, will incur very large cost
-      Arguments.of(0.11, 1, 26474),
+      Arguments.of(0.11, 1, 529485),
       // 3 % above max slope, will incur very large cost
-      Arguments.of(0.12, 1, 37978)
+      Arguments.of(0.12, 1, 759563)
     );
   }
 
@@ -105,7 +105,7 @@ class StreetEdgeWheelchairCostTest {
   }
 
   static Stream<Arguments> wheelchairStairsCases() {
-    return Stream.of(Arguments.of(1, 22), Arguments.of(10, 225), Arguments.of(100, 2255));
+    return Stream.of(Arguments.of(1, 451), Arguments.of(10, 4511), Arguments.of(100, 45112));
   }
 
   @ParameterizedTest(
@@ -147,11 +147,11 @@ class StreetEdgeWheelchairCostTest {
 
     StreetEdge noStairsEdge = stairEdge.toBuilder().withStairs(false).buildAndConnect();
     var notStairsResult = traverse(noStairsEdge, req.build());
-    assertEquals(7, (long) notStairsResult.weight);
+    assertEquals(150, (long) notStairsResult.weight);
   }
 
   static Stream<Arguments> inaccessibleStreetCases() {
-    return Stream.of(Arguments.of(1f, 15), Arguments.of(10f, 150), Arguments.of(100f, 1503));
+    return Stream.of(Arguments.of(1f, 300), Arguments.of(10f, 3007), Arguments.of(100f, 30075));
   }
 
   @ParameterizedTest(
@@ -192,15 +192,15 @@ class StreetEdgeWheelchairCostTest {
     // reluctance should have no effect when the edge is accessible
     StreetEdge accessibleEdge = edge.toBuilder().withWheelchairAccessible(true).buildAndConnect();
     var accessibleResult = traverse(accessibleEdge, req.build());
-    assertEquals(15, (long) accessibleResult.weight);
+    assertEquals(300, (long) accessibleResult.weight);
   }
 
   static Stream<Arguments> walkReluctanceCases() {
     return Stream.of(
-      Arguments.of(0.5, 3),
-      Arguments.of(1, 7),
-      Arguments.of(10, 75),
-      Arguments.of(100, 751)
+      Arguments.of(0.5, 75),
+      Arguments.of(1, 150),
+      Arguments.of(10, 1503),
+      Arguments.of(100, 15037)
     );
   }
 

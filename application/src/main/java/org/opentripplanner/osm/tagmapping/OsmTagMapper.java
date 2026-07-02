@@ -85,7 +85,7 @@ public class OsmTagMapper {
     props.setProperties("highway=road", allWayProperties);
     props.setProperties("highway=byway", withModes(ALL).bicycleSafety(1.3));
     props.setProperties("highway=track", withModes(ALL).bicycleSafety(1.3));
-    props.setProperties("highway=service", withModes(ALL).bicycleSafety(1.1));
+    props.setProperties("highway=service", withModes(ALL).bicycleSafety(1.1).walkSafety(20));
     props.setProperties("highway=residential", withModes(ALL).bicycleSafety(0.98));
     props.setProperties("highway=residential_link", withModes(ALL).bicycleSafety(0.98));
     props.setProperties("highway=tertiary", allWayProperties);
@@ -718,6 +718,9 @@ public class OsmTagMapper {
 
     props.createNames("highway=footway;footway=sidewalk", "name.sidewalk");
     props.createNames("highway=path;path=sidewalk", "name.sidewalk");
+    props.createNames("barrier=kerb", "name.kerb");
+    props.createNames("highway=footway;footway=crossing", "name.crossing");
+    props.createNames("highway=crossing", "name.crossing");
 
     props.createNames("highway=steps", "name.steps");
 

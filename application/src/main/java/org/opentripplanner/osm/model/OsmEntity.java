@@ -395,6 +395,29 @@ public class OsmEntity {
     return null;
   }
 
+  public String getFeatureType() {
+    if (tags == null) {
+      return null;
+    }
+    if (tags.containsKey("highway")) {
+      String type = tags.get("highway");
+      if (tags.containsKey(type)) {
+        // Get values like footway=sidewalk or path=sidewalk
+        type = tags.get(type);
+      }
+      return type;
+    }
+    return null;
+  }
+
+  public String getOsmId() {
+    return "osm:" + getOsmType() + ":" + getId();
+  }
+
+  public String getOsmType() {
+    return null;
+  }
+
   /**
    * Replace various pattern by the OSM tag values, with I18n support.
    *
@@ -678,6 +701,8 @@ public class OsmEntity {
           isVehicleExplicitlyAllowed()
         );
       }
+      return true;
+    } else if (isOneOfTags("kerb", Set.of("lowered", "lowered_and_sloped", "flush"))) {
       return true;
     }
 

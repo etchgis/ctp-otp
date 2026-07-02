@@ -67,7 +67,7 @@ class WalkRoutingTest {
       states.getLast().getTimeAccurate()
     );
     // should be same for every parametrized offset, otherwise irrelevant
-    assertEquals(13926, diff);
+    assertEquals(50427, diff);
   }
 
   private static List<GraphPath<State, Edge, Vertex>> route(

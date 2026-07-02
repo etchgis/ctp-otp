@@ -2,6 +2,7 @@ package org.opentripplanner.graph_builder.module.osm;
 
 import com.google.common.collect.Iterables;
 import gnu.trove.iterator.TLongIterator;
+import gnu.trove.list.TLongList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -174,7 +175,7 @@ public class OsmModule implements GraphBuilderModule {
       osmdb.getWalkableAreas(),
       osmdb.getParkAndRideAreas(),
       osmdb.getBikeParkingAreas()
-    )) setWayName(area.parent);
+    )) setWayName(area.parent, osmdb, vertexGenerator);
 
     // figure out which nodes that are actually intersections
     vertexGenerator.initIntersectionNodes();
@@ -293,7 +294,7 @@ public class OsmModule implements GraphBuilderModule {
 
     WAY: for (OsmWay way : osmdb.getWays()) {
       WayProperties wayData = way.getOsmProvider().getWayPropertySet().getDataForWay(way);
-      setWayName(way);
+      setWayName(way, osmdb, vertexGenerator);
 
       var permissions = wayData.getPermission();
 
@@ -486,8 +487,49 @@ public class OsmModule implements GraphBuilderModule {
     vertices.forEach(bv -> bv.makeBarrierAtEndReachable());
   }
 
-  private void setWayName(OsmEntity way) {
+  private void setWayName(OsmEntity way, OsmDatabase osmdb, VertexGenerator vertexGenerator) {
     if (!way.hasTag("name")) {
+      // if it's a crossing (footway=crossing), use the name of the way it crosses
+      String footway = way.getTag("footway");
+      if (footway != null) {
+        if (footway.equals("crossing") && way instanceof OsmWay) {
+          // find the interior node that is an intersection vertex; this can't be an end node
+          TLongList nodes = ((OsmWay) way).getNodeRefs();
+          for (int i = 1; i < nodes.size() - 1; i++) {
+            long nodeId = nodes.get(i);
+            if (vertexGenerator.intersectionNodes().containsKey(nodeId)) {
+              // find the way that this node is part of
+              for (OsmWay way2 : osmdb.getWays()) {
+                if (way2.getNodeRefs().contains(nodeId)) {
+                  String name = way2.getTag("name");
+                  if (name != null) {
+                    way.setCreativeName(I18NString.of(name + " crossing"));
+                    return;
+                  }
+                }
+              }
+            }
+          }
+          way.setCreativeName(I18NString.of("driveway crossing"));
+          return;
+        } else if (footway.equals("sidewalk")) {
+          // Check for a "description" tag, and use the first line of it as the name
+          String description = way.getTag("description");
+          if (description != null) {
+            String[] lines = description.split("\n");
+            if (lines.length > 0) {
+              String name = lines[0];
+              // do a case-insensitive search for "sidewalk" to see if it's already in the description
+              if (!name.toLowerCase().contains("sidewalk")) {
+                name = "sidewalk along " + name;
+              }
+              way.setCreativeName(I18NString.of(name));
+              return;
+            }
+          }
+        }
+      }
+
       I18NString creativeName = way.getOsmProvider().getWayPropertySet().getCreativeNameForWay(way);
       if (creativeName != null) {
         way.setCreativeName(creativeName);
@@ -597,6 +639,7 @@ public class OsmModule implements GraphBuilderModule {
   ) {
     String label = "way " + way.getId() + " from " + index;
     label = label.intern();
+
     I18NString name = params.edgeNamer().getNameForWay(way, label);
     float carSpeed = way.getOsmProvider().getOsmTagMapper().getCarSpeedForWay(way, back);
 
@@ -605,6 +648,8 @@ public class OsmModule implements GraphBuilderModule {
       .withToVertex(endEndpoint)
       .withGeometry(geometry)
       .withName(name)
+      .withFeatureType(way.getFeatureType())
+      .withFeatureId(way.getOsmId())
       .withMeterLength(length)
       .withPermission(permissions)
       .withBack(back)

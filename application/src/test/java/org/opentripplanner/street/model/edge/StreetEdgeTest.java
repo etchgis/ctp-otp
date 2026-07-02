@@ -95,8 +95,10 @@ public class StreetEdgeTest {
     State s1 = e1.traverse(s0)[0];
 
     // Should use the speed on the edge.
-    double expectedWeight = e1.getDistanceMeters() / options.preferences().walk().speed();
-    long expectedDuration = (long) Math.ceil(expectedWeight);
+    double time = e1.getDistanceMeters() / options.preferences().walk().speed();
+    long expectedDuration = (long) Math.ceil(time);
+    // The edge allows cars, so walking on it gets the roadway penalty.
+    double expectedWeight = time * 20;
     assertEquals(expectedDuration, s1.getElapsedTimeSeconds(), 0.0);
     assertEquals(expectedWeight, s1.getWeight(), 0.0);
   }

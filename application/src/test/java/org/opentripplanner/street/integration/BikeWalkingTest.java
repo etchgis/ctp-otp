@@ -37,7 +37,7 @@ public class BikeWalkingTest extends GraphRoutingTest {
       C,
       F,
       "null - 0 / 0.0 - null",
-      "WALK - 10 / 20.0 - CD street",
+      "WALK - 10 / 400.0 - CD street",
       "WALK - 10 / 20.0 - DE street",
       "WALK - 10 / 20.0 - EF street"
     );
@@ -241,7 +241,7 @@ public class BikeWalkingTest extends GraphRoutingTest {
       C,
       Q,
       "null - 0 / 0.0 - null",
-      "WALK - 10 / 20.0 - CD street",
+      "WALK - 10 / 400.0 - CD street",
       "null - 0 / 1.0 - null",
       "WALK - 90 / 90.0 - Elevator",
       "WALK - 20 / 20.0 - null",

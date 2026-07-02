@@ -60,7 +60,7 @@ public class BarrierRoutingTest {
 
     // This takes a detour to avoid walking with the bike
     var polyline1 = computePolyline(graph, from, to, BIKE);
-    assertThatPolylinesAreEqual(polyline1, "o~qgH_ccu@DGFENQZ]NOLOHMFKFILB`BOGo@AeD]U}BaA]Q??");
+    assertThatPolylinesAreEqual(polyline1, "o~qgH_ccu@DGFENQZ]NOLOHMFKFILB`BOGo@AeD]U}BaA]Q?@");
 
     // The reluctance for walking with the bike is reduced, so a detour is not taken
     var polyline2 = computePolyline(
@@ -81,7 +81,7 @@ public class BarrierRoutingTest {
               () -> assertEquals(TraverseMode.BICYCLE, i.streetLeg(0).getMode()),
               () ->
                 assertEquals(
-                  List.of(false, true, false, true, false),
+                  List.of(false, true, false, true),
                   i
                     .legs()
                     .get(0)
@@ -93,7 +93,7 @@ public class BarrierRoutingTest {
             )
           )
     );
-    assertThatPolylinesAreEqual(polyline2, "o~qgH_ccu@Bi@Bk@Bi@Bg@NaA@_@Dm@Dq@a@KJy@@I@M@E??");
+    assertThatPolylinesAreEqual(polyline2, "o~qgH_ccu@Bi@Bk@Bi@Bg@NaA@_@Dm@Dq@a@KJy@@I@M@C");
   }
 
   /**
@@ -199,6 +199,6 @@ public class BarrierRoutingTest {
     Geometry legGeometry = itineraries.get(0).legs().get(0).legGeometry();
     temporaryVertices.close();
 
-    return EncodedPolyline.encode(legGeometry).points();
+    return EncodedPolyline.encode(legGeometry, 5).points();
   }
 }

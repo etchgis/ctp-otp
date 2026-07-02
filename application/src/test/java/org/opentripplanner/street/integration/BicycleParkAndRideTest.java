@@ -97,7 +97,7 @@ public class BicycleParkAndRideTest extends ParkAndRideTest {
       "null - All Park Entrance (35.80, 18)",
       "null (parked) - All Park Entrance (155.80, 78)",
       "null (parked) - All Park Entrance (156.80, 78)",
-      "WALK (parked) - AB street (287.63, 143)"
+      "WALK (parked) - AB street (2,773.34, 143)"
     );
   }
 }

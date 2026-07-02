@@ -49,10 +49,10 @@ public class BicycleRoutingTest {
     var fritzLeharStr = GenericLocation.fromCoordinate(48.59696, 8.85806);
 
     var polyline1 = computePolyline(herrenbergGraph, mozartStr, fritzLeharStr);
-    assertThatPolylinesAreEqual(polyline1, "_srgHutau@h@B|@Jf@B?PdABJT@jA?DSp@_@fFsAT{@DBpC");
+    assertThatPolylinesAreEqual(polyline1, "isrgHutau@r@B|@Jf@B?PdABJT@jA?DSp@_@fFsAT{@DBpC");
 
     var polyline2 = computePolyline(herrenbergGraph, fritzLeharStr, mozartStr);
-    assertThatPolylinesAreEqual(polyline2, "{qrgH{aau@CqCz@ErAU^gFRq@?EAkAKUeACg@A_AM_AEDQF@H?");
+    assertThatPolylinesAreEqual(polyline2, "{qrgH{aau@CqCz@ErAU^gFRq@?EAkAKUeACg@A_AM_AEDQF@");
   }
 
   /**
@@ -65,10 +65,10 @@ public class BicycleRoutingTest {
     var zeppelinStr = GenericLocation.fromCoordinate(48.59972, 8.86239);
 
     var polyline1 = computePolyline(herrenbergGraph, schiessmauer, zeppelinStr);
-    assertThatPolylinesAreEqual(polyline1, "otrgH{cbu@S_AU_AmAdAyApAGDs@h@_@\\_ClBe@^?S");
+    assertThatPolylinesAreEqual(polyline1, "otrgH{cbu@S_AU_AmAdAyApAGDs@h@_@\\_ClBe@^M??U");
 
     var polyline2 = computePolyline(herrenbergGraph, zeppelinStr, schiessmauer);
-    assertThatPolylinesAreEqual(polyline2, "ccsgH{|au@?Rd@_@~BmB^]r@i@FExAqAlAeAT~@R~@");
+    assertThatPolylinesAreEqual(polyline2, "qcsgH}|au@?TL?d@_@~BmB^]r@i@FExAqAlAeAT~@R~@");
   }
 
   private static String computePolyline(Graph graph, GenericLocation from, GenericLocation to) {
@@ -116,6 +116,6 @@ public class BicycleRoutingTest {
         })
     );
     Geometry legGeometry = itineraries.get(0).legs().get(0).legGeometry();
-    return EncodedPolyline.encode(legGeometry).points();
+    return EncodedPolyline.encode(legGeometry, 5).points();
   }
 }

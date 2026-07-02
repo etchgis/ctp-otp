@@ -101,7 +101,7 @@ public class CarParkAndRideTest extends ParkAndRideTest {
       "null (parked) - CarPark #2 Entrance (241.00, 180)",
       "null (parked) - CarPark #2 Entrance (242.00, 180)",
       "WALK (parked) - DE street (372.83, 246)",
-      "WALK (parked) - EF street (503.65, 311)"
+      "WALK (parked) - EF street (2,989.37, 311)"
     );
   }
 
@@ -117,7 +117,7 @@ public class CarParkAndRideTest extends ParkAndRideTest {
       "null (parked) - AllPark Entrance (242.00, 180)",
       "WALK (parked) - CD street (372.83, 246)",
       "WALK (parked) - DE street (503.65, 311)",
-      "WALK (parked) - EF street (634.48, 377)"
+      "WALK (parked) - EF street (3,120.20, 377)"
     );
   }
 
@@ -132,7 +132,7 @@ public class CarParkAndRideTest extends ParkAndRideTest {
       "null - CarPark #1 Entrance B (16.54, 8)",
       "null (parked) - CarPark #1 Entrance A (256.54, 188)",
       "null (parked) - CarPark #1 Entrance A (257.54, 188)",
-      "WALK (parked) - AB street (388.36, 254)"
+      "WALK (parked) - AB street (2,874.08, 254)"
     );
   }
 
@@ -153,7 +153,7 @@ public class CarParkAndRideTest extends ParkAndRideTest {
       "null (parked) - CarPark #2 Entrance (241.00, 180)",
       "null (parked) - CarPark #2 Entrance (242.00, 180)",
       "WALK (parked) - DE street (372.83, 246)",
-      "WALK (parked) - EF street (503.65, 311)"
+      "WALK (parked) - EF street (2,989.37, 311)"
     );
   }
 

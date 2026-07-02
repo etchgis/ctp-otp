@@ -171,6 +171,14 @@ public abstract class Edge implements AStarEdge<State, Edge, Vertex>, Serializab
     return 0;
   }
 
+  public String getFeatureType() {
+    return null;
+  }
+
+  public String getFeatureId() {
+    return null;
+  }
+
   /**
    * The distance to walk adjusted for elevation and obstacles. This is used together with the
    * walking speed to find the actual walking transfer time. This plus {@link
