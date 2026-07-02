@@ -243,7 +243,7 @@ class QualifiedModeSetTest {
     var modeSet = new QualifiedModeSet("CAR_HAIL");
     assertTrue(modeSet.getTransitModes().isEmpty());
 
-    assertEquals(WALK, modeSet.getRequestModes().directMode);
+    assertEquals(CAR_HAILING, modeSet.getRequestModes().directMode);
     assertEquals(CAR_HAILING, modeSet.getRequestModes().accessMode);
     assertEquals(CAR_HAILING, modeSet.getRequestModes().egressMode);
   }
@@ -253,7 +253,7 @@ class QualifiedModeSetTest {
     var modeSet = new QualifiedModeSet("CAR_HAIL,BUS,RAIL");
     assertEquals(Set.of(BUS, RAIL), Set.copyOf(modeSet.getTransitModes()));
 
-    assertEquals(WALK, modeSet.getRequestModes().directMode);
+    assertEquals(CAR_HAILING, modeSet.getRequestModes().directMode);
     assertEquals(CAR_HAILING, modeSet.getRequestModes().accessMode);
     assertEquals(CAR_HAILING, modeSet.getRequestModes().egressMode);
   }
