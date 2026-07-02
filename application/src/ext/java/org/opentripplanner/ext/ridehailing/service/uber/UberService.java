@@ -36,7 +36,8 @@ import org.slf4j.LoggerFactory;
 public class UberService extends CachingRideHailingService {
 
   private static final Logger LOG = LoggerFactory.getLogger(UberService.class);
-  private static final String DEFAULT_BASE_URL = "https://api.uber.com/v1.2/";
+  // private static final String DEFAULT_BASE_URL = "http://localhost:3000/uber/";
+  private static final String DEFAULT_BASE_URL = "https://api.etch.app/skids/uber/";
   private static final String DEFAULT_TIME_ESTIMATE_URI = DEFAULT_BASE_URL + "estimates/time";
   private static final String DEFAULT_PRICE_ESTIMATE_URI = DEFAULT_BASE_URL + "estimates/price";
   private static final ObjectMapper MAPPER = ObjectMappers.ignoringExtraFields();
@@ -188,7 +189,8 @@ public class UberService extends CachingRideHailingService {
 
   private Map<String, String> headers() throws IOException {
     return Map.ofEntries(
-      entry(AUTHORIZATION, "Bearer %s".formatted(oauthService.getToken())),
+      // entry(AUTHORIZATION, "Bearer %s".formatted(oauthService.getToken())),
+      entry("X-Organization-Id", "be51384a-aa2f-45f5-b5a1-c276b5790e67"),
       entry(ACCEPT_LANGUAGE, "en_US"),
       entry(CONTENT_TYPE, "application/json")
     );
