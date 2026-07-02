@@ -69,7 +69,11 @@ public abstract class SnapshotTestBase {
   );
   private static final DateTimeFormatter apiTimeFormatter = DateTimeFormatter.ofPattern("H:mm%20a");
   private static final SnapshotSerializer snapshotSerializer = new SnapshotItinerarySerializer();
-  private static final ItineraryMapper itineraryMapper = new ItineraryMapper(Locale.ENGLISH, true);
+  private static final ItineraryMapper itineraryMapper = new ItineraryMapper(
+    Locale.ENGLISH,
+    true,
+    5
+  );
 
   static final boolean verbose = Boolean.getBoolean("otp.test.verbose");
 

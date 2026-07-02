@@ -268,7 +268,7 @@ public class ElevationModule implements GraphBuilderModule {
       HashMap<String, PackedCoordinateSequence> newCachedElevations = new HashMap<>();
       for (StreetEdge streetEdge : edgesWithCalculatedElevations) {
         newCachedElevations.put(
-          EncodedPolyline.encode(streetEdge.getGeometry()).points(),
+          EncodedPolyline.encode(streetEdge.getGeometry(), 5).points(),
           streetEdge.getElevationProfile()
         );
       }
@@ -407,7 +407,7 @@ public class ElevationModule implements GraphBuilderModule {
     Geometry edgeGeometry = ee.getGeometry();
     if (cachedElevations != null) {
       PackedCoordinateSequence coordinateSequence = cachedElevations.get(
-        EncodedPolyline.encode(edgeGeometry).points()
+        EncodedPolyline.encode(edgeGeometry, 5).points()
       );
       if (coordinateSequence != null) {
         // found a cached value! Set the elevation profile with the pre-calculated data.
