@@ -420,23 +420,23 @@ public class ItineraryListFilterChainBuilder {
     }
 
     // Filter transit itineraries on generalized-cost
-    if (transitGeneralizedCostFilterParams != null) {
-      addRemoveFilter(
-        filters,
-        new TransitGeneralizedCostFilter(
-          transitGeneralizedCostFilterParams.costLimitFunction(),
-          transitGeneralizedCostFilterParams.intervalRelaxFactor()
-        )
-      );
-    }
+    // if (transitGeneralizedCostFilterParams != null) {
+    //   addRemoveFilter(
+    //     filters,
+    //     new TransitGeneralizedCostFilter(
+    //       transitGeneralizedCostFilterParams.costLimitFunction(),
+    //       transitGeneralizedCostFilterParams.intervalRelaxFactor()
+    //     )
+    //   );
+    // }
 
     // Filter non-transit itineraries on generalized-cost
-    if (nonTransitGeneralizedCostLimit != null) {
-      addRemoveFilter(
-        filters,
-        new RemoveNonTransitItinerariesBasedOnGeneralizedCost(nonTransitGeneralizedCostLimit)
-      );
-    }
+    // if (nonTransitGeneralizedCostLimit != null) {
+    //   addRemoveFilter(
+    //     filters,
+    //     new RemoveNonTransitItinerariesBasedOnGeneralizedCost(nonTransitGeneralizedCostLimit)
+    //   );
+    // }
 
     // Apply all absolute filters AFTER the groupBy filters. Absolute filters are filters that
     // remove elements/ based on the given itinerary properties - not considering other

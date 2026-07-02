@@ -97,7 +97,7 @@ public class RouteRequestToFilterChainMapper {
       .withSearchWindow(earliestDepartureTimeUsed, searchWindowUsed)
       .withPageCursorInputSubscriber(pageCursorInputSubscriber)
       .withRemoveWalkAllTheWayResults(removeWalkAllTheWayResults)
-      .withRemoveTransitIfWalkingIsBetter(true)
+      .withRemoveTransitIfWalkingIsBetter(false)
       .withFilterDirectFlexBySearchWindow(params.filterDirectFlexBySearchWindow())
       .withDebugEnabled(params.debug());
 
