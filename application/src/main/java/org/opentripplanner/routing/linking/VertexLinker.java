@@ -37,6 +37,7 @@ import org.opentripplanner.street.model.vertex.Vertex;
 import org.opentripplanner.street.model.vertex.VertexFactory;
 import org.opentripplanner.street.search.TraverseMode;
 import org.opentripplanner.street.search.TraverseModeSet;
+import org.opentripplanner.transit.model.site.AreaStop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,12 +87,34 @@ public class VertexLinker {
     TraverseMode.CAR
   );
 
+  /**
+   * Functional interface for locating AreaStops that contain a given coordinate.
+   * This is used to assign flex zone membership to dynamically created vertices.
+   */
+  @FunctionalInterface
+  public interface AreaStopLocator {
+    /**
+     * Find all AreaStops whose geometry contains the given coordinate.
+     * @param lon Longitude of the point to check
+     * @param lat Latitude of the point to check
+     * @return Collection of AreaStops containing this point (may be empty)
+     */
+    Collection<AreaStop> findContainingAreaStops(double lon, double lat);
+  }
+
   private final Graph graph;
 
   private final VertexFactory vertexFactory;
 
   private boolean areaVisibility = true;
   private int maxAreaNodes = StreetConstants.DEFAULT_MAX_AREA_NODES;
+
+  /**
+   * Optional locator for finding AreaStops containing a coordinate.
+   * When set, this enables flex zone assignment for dynamically created vertices.
+   */
+  @Nullable
+  private AreaStopLocator areaStopLocator;
 
   /**
    * Construct a new VertexLinker. NOTE: Only one VertexLinker should be active on a graph at any
@@ -142,6 +165,18 @@ public class VertexLinker {
 
   public void setMaxAreaNodes(int maxAreaNodes) {
     this.maxAreaNodes = maxAreaNodes;
+  }
+
+  /**
+   * Set the AreaStopLocator used to find flex zones containing dynamically created vertices.
+   * This enables flex service pickup/dropoff at the exact location where a user's origin or
+   * destination is linked to the street network, rather than forcing them to walk to a
+   * pre-mapped intersection vertex.
+   *
+   * @param areaStopLocator A function that finds AreaStops containing a given coordinate
+   */
+  public void setAreaStopLocator(@Nullable AreaStopLocator areaStopLocator) {
+    this.areaStopLocator = areaStopLocator;
   }
 
   /** projected distance from stop to edge, in latitude degrees */
@@ -360,20 +395,81 @@ public class VertexLinker {
         continue;
       }
 
-      double closestDistance = candidateEdgesForMode
+      // For walking modes, apply pedestrian preference scoring
+      boolean applyPedestrianPreference = mode == TraverseMode.WALK;
+
+      double closestScore = candidateEdgesForMode
         .stream()
-        .mapToDouble(ce -> ce.distanceDegreesLat)
+        .mapToDouble(ce -> {
+          if (applyPedestrianPreference) {
+            // Model GPS uncertainty: if GPS shows you in/near a street, you're probably
+            // on the sidewalk. Add a fixed penalty to car streets rather than multiplying.
+            double score;
+            if (ce.item.getPermission().allows(TraverseMode.CAR)) {
+              // GPS accuracy is typically 5-15m in urban areas
+              // Convert to degrees (very rough approximation: 1 degree is about 111km)
+              double gpsUncertaintyDegrees = 15.0 / 111000.0; // ~15 meters
+              score = ce.distanceDegreesLat + gpsUncertaintyDegrees;
+            } else {
+              // No penalty for pedestrian-only edges
+              score = ce.distanceDegreesLat;
+            }
+            return score;
+          } else {
+            // For non-walking modes, use pure geometric distance
+            return ce.distanceDegreesLat;
+          }
+        })
         .min()
         .getAsDouble();
 
+      // Find all edges with scores close to the best score
       // Because this is a set, each instance of DistanceTo<StreetEdge> will only be added once
-      closesEdges.addAll(
-        candidateEdges
-          .stream()
-          .filter(ce -> ce.distanceDegreesLat <= closestDistance + DUPLICATE_WAY_EPSILON_DEGREES)
-          .collect(Collectors.toSet())
-      );
+      var selectedEdges = candidateEdges
+        .stream()
+        .filter(ce -> {
+          double score;
+          if (applyPedestrianPreference) {
+            // Same GPS uncertainty logic as above
+            if (ce.item.getPermission().allows(TraverseMode.CAR)) {
+              double gpsUncertaintyDegrees = 15.0 / 111000.0; // ~15 meters
+              score = ce.distanceDegreesLat + gpsUncertaintyDegrees;
+            } else {
+              score = ce.distanceDegreesLat;
+            }
+          } else {
+            score = ce.distanceDegreesLat;
+          }
+          boolean selected = score <= closestScore + DUPLICATE_WAY_EPSILON_DEGREES;
+          return selected;
+        })
+        .collect(Collectors.toSet());
+
+      closesEdges.addAll(selectedEdges);
     }
+
+    // For flex routing: also include the closest CAR-accessible edge.
+    // When the user's origin/destination is linked to a pedestrian-only edge (sidewalk),
+    // flex vehicles can't pick up/drop off there. By also linking to the nearest
+    // CAR-accessible edge, we enable flex service even when the primary link is pedestrian-only.
+    if (OTPFeature.FlexRouting.isOn()) {
+      var closestCarEdge = candidateEdges
+        .stream()
+        .filter(ce -> ce.item.getPermission().allows(TraverseMode.CAR))
+        .min((a, b) -> Double.compare(a.distanceDegreesLat, b.distanceDegreesLat));
+
+      if (closestCarEdge.isPresent()) {
+        // Only add if not already selected (within epsilon of the closest car edge)
+        var carEdge = closestCarEdge.get();
+        boolean alreadyHasCarEdge = closesEdges.stream()
+          .anyMatch(e -> e.item.getPermission().allows(TraverseMode.CAR) &&
+                         e.distanceDegreesLat <= carEdge.distanceDegreesLat + DUPLICATE_WAY_EPSILON_DEGREES);
+        if (!alreadyHasCarEdge) {
+          closesEdges.add(carEdge);
+        }
+      }
+    }
+
     return closesEdges;
   }
 
@@ -431,15 +527,33 @@ public class VertexLinker {
     }
 
     if (OTPFeature.FlexRouting.isOn()) {
-      var areaStops = Stream.concat(start.getIncoming().stream(), start.getOutgoing().stream())
+      // First, inherit AreaStops from adjacent vertices (existing behavior)
+      var inheritedAreaStops = Stream.concat(
+        start.getIncoming().stream(),
+        start.getOutgoing().stream()
+      )
         .flatMap(e ->
           Stream.concat(
             e.getFromVertex().areaStops().stream(),
             e.getToVertex().areaStops().stream()
           )
         )
-        .toList();
-      start.addAreaStops(areaStops);
+        .collect(Collectors.toSet());
+      start.addAreaStops(inheritedAreaStops);
+
+      // Additionally, for temporary/request-scoped vertices, directly check if the vertex
+      // is within any flex zone polygon. This allows flex pickup/dropoff at the exact
+      // location where the user's origin/destination is linked to the street network,
+      // rather than forcing them to walk to a pre-mapped intersection.
+      if (scope != Scope.PERMANENT && areaStopLocator != null) {
+        var containingAreaStops = areaStopLocator.findContainingAreaStops(
+          start.getLon(),
+          start.getLat()
+        );
+        if (!containingAreaStops.isEmpty()) {
+          start.addAreaStops(containingAreaStops);
+        }
+      }
     }
 
     return start;

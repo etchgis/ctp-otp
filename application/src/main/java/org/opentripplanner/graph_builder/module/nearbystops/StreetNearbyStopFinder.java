@@ -28,6 +28,8 @@ import org.opentripplanner.street.model.vertex.TransitStopVertex;
 import org.opentripplanner.street.model.vertex.Vertex;
 import org.opentripplanner.street.search.StreetSearchBuilder;
 import org.opentripplanner.street.search.TraverseMode;
+import org.opentripplanner.street.search.request.StreetSearchRequest;
+import org.opentripplanner.street.search.request.StreetSearchRequestMapper;
 import org.opentripplanner.street.search.state.State;
 import org.opentripplanner.street.search.strategy.DominanceFunctions;
 import org.opentripplanner.transit.model.site.AreaStop;
@@ -110,6 +112,70 @@ public class StreetNearbyStopFinder implements NearbyStopFinder {
       streetRequest
     );
 
+    // Only used if OTPFeature.FlexRouting.isOn()
+    Multimap<AreaStop, State> locationsMap = ArrayListMultimap.create();
+
+    // Check origin vertices for AreaStops (important for flex routing when the
+    // origin/destination is inside a flex zone - these vertices are skipped in the
+    // SPT loop below since they are the search origin).
+    // Also check directly connected vertices (via outgoing edges for forward search,
+    // incoming edges for reverse search) since TemporaryStreetLocation connects to
+    // TemporarySplitterVertex which may have AreaStops.
+    // Check origin vertices and their connected vertices for AreaStops.
+    // This enables flex pickup/dropoff at the user's origin/destination when they're inside
+    // a flex zone, rather than forcing them to walk to a more distant intersection.
+    if (OTPFeature.FlexRouting.isOn()) {
+      StreetSearchRequest streetSearchRequest = StreetSearchRequestMapper.map(request)
+        .withMode(streetRequest.mode())
+        .withArriveBy(reverseDirection)
+        .build();
+
+      for (Vertex originVertex : originVertices) {
+        if (ignoreVertices.contains(originVertex)) {
+          continue;
+        }
+
+        // Check the origin vertex itself
+        if (originVertex instanceof StreetVertex streetVertex && !streetVertex.areaStops().isEmpty()) {
+          State zeroState = new State(originVertex, streetSearchRequest);
+          if (canBoardFlex(zeroState, reverseDirection)) {
+            for (AreaStop areaStop : streetVertex.areaStops()) {
+              locationsMap.put(areaStop, zeroState);
+            }
+          }
+        }
+
+        // Also check directly connected vertices (one edge away).
+        // For TemporaryStreetLocation, edges connect to TemporarySplitterVertex which may have AreaStops.
+        // We must apply canBoardFlex check because the flex path calculator uses CAR mode
+        // and cannot route to pedestrian-only vertices.
+        for (Edge edge : originVertex.getIncoming()) {
+          Vertex connectedVertex = edge.getFromVertex();
+          if (connectedVertex instanceof StreetVertex connectedStreetVertex &&
+              !connectedStreetVertex.areaStops().isEmpty()) {
+            State stateAtConnected = new State(connectedVertex, streetSearchRequest);
+            if (canBoardFlex(stateAtConnected, reverseDirection)) {
+              for (AreaStop areaStop : connectedStreetVertex.areaStops()) {
+                locationsMap.put(areaStop, stateAtConnected);
+              }
+            }
+          }
+        }
+        for (Edge edge : originVertex.getOutgoing()) {
+          Vertex connectedVertex = edge.getToVertex();
+          if (connectedVertex instanceof StreetVertex connectedStreetVertex &&
+              !connectedStreetVertex.areaStops().isEmpty()) {
+            State stateAtConnected = new State(connectedVertex, streetSearchRequest);
+            if (canBoardFlex(stateAtConnected, reverseDirection)) {
+              for (AreaStop areaStop : connectedStreetVertex.areaStops()) {
+                locationsMap.put(areaStop, stateAtConnected);
+              }
+            }
+          }
+        }
+      }
+    }
+
     // Return only the origin vertices if there are no valid street modes
     if (
       streetRequest.mode() == StreetMode.NOT_SET ||
@@ -136,9 +202,6 @@ public class StreetNearbyStopFinder implements NearbyStopFinder {
     }
 
     ShortestPathTree<State, Edge, Vertex> spt = streetSearch.getShortestPathTree();
-
-    // Only used if OTPFeature.FlexRouting.isOn()
-    Multimap<AreaStop, State> locationsMap = ArrayListMultimap.create();
 
     if (spt != null) {
       // TODO use GenericAStar and a traverseVisitor? Add an earliestArrival switch to genericAStar?
@@ -178,11 +241,20 @@ public class StreetNearbyStopFinder implements NearbyStopFinder {
         // If the best state for this AreaStop is a SplitterVertex, we want to get the
         // TemporaryStreetLocation instead. This allows us to reach SplitterVertices in both
         // directions when routing later.
-        if (min.getBackState().getVertex() instanceof TemporaryStreetLocation) {
+        // Note: backState may be null for states created at origin vertices (zero distance)
+        if (min.getBackState() != null &&
+            min.getBackState().getVertex() instanceof TemporaryStreetLocation) {
           min = min.getBackState();
         }
 
-        stopsFound.add(NearbyStop.nearbyStopForState(min, areaStop));
+        // For states without backState (created at origin vertex), use zero distance
+        NearbyStop nearbyStop;
+        if (min.getBackState() == null) {
+          nearbyStop = NearbyStop.ofZeroDistance(areaStop, min);
+        } else {
+          nearbyStop = NearbyStop.nearbyStopForState(min, areaStop);
+        }
+        stopsFound.add(nearbyStop);
       }
     }
 

@@ -79,17 +79,15 @@ public class FlexDirectPathFactory {
       //      Fix: Find out why and refactor out the business logic and reuse it.
       //      Problem: Any asymmetrical restriction which apply/do not apply to the egress,
       //               but do not apply/apply to the access, like booking-notice.
-      if (
-        flexEgressTemplates.stream().anyMatch(t -> t.getAccessEgressStop().equals(transferStop))
-      ) {
-        for (NearbyStop egress : streetEgressByStop.get(transferStop)) {
-          createDirectGraphPath(template, egress, arriveBy, requestTime).ifPresent(
-            directFlexPaths::add
-          );
+      boolean hasMatchingEgress = flexEgressTemplates.stream().anyMatch(t -> t.getAccessEgressStop().equals(transferStop));
+      if (hasMatchingEgress) {
+        var egresses = streetEgressByStop.get(transferStop);
+        for (NearbyStop egress : egresses) {
+          var path = createDirectGraphPath(template, egress, arriveBy, requestTime);
+          path.ifPresent(directFlexPaths::add);
         }
       }
     }
-
     return directFlexPaths;
   }
 

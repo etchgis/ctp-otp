@@ -6,8 +6,12 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import org.geotools.referencing.factory.DeferredAuthorityFactory;
 import org.geotools.util.WeakCollectionCleaner;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Point;
 import org.opentripplanner.framework.application.ApplicationShutdownSupport;
+import org.opentripplanner.framework.application.OTPFeature;
 import org.opentripplanner.framework.application.OtpAppException;
+import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.graph_builder.GraphBuilder;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueSummary;
 import org.opentripplanner.raptor.configure.RaptorConfig;
@@ -193,6 +197,30 @@ public class OTPMain {
     app.graph().index();
 
     app.graph().getLinker().setMaxAreaNodes(app.streetLimitationParameters().maxAreaNodes());
+
+    // Set up AreaStopLocator for flex routing if enabled.
+    // This allows flex pickup/dropoff at the user's exact origin/destination location
+    // rather than forcing them to walk to pre-mapped intersection vertices.
+    if (OTPFeature.FlexRouting.isOn()) {
+      var siteRepository = app.timetableRepository().getSiteRepository();
+      if (siteRepository.hasAreaStops()) {
+        LOG.info("Setting up AreaStopLocator for {} flex zones", siteRepository.listAreaStops().size());
+        app.graph().getLinker().setAreaStopLocator((lon, lat) -> {
+          Point point = GeometryUtils.getGeometryFactory().createPoint(
+            new org.locationtech.jts.geom.Coordinate(lon, lat)
+          );
+          Envelope envelope = point.getEnvelopeInternal();
+          var found = siteRepository.findAreaStops(envelope)
+            .stream()
+            .filter(areaStop -> areaStop.getGeometry().contains(point))
+            .toList();
+          return found;
+        });
+      } else {
+        LOG.info("No AreaStops found, skipping AreaStopLocator setup");
+      }
+    }
+
     // publishing the config version info make it available to the APIs
     setOtpConfigVersionsOnServerInfo(app);
 
