@@ -80,6 +80,16 @@ public class ApiWalkStep {
   public String elevation;
 
   /**
+   * Type of map feature causing the step: "path", "sidewalk", "crosswalk", "stairs", "elevator", "entrance"
+   */
+  public String featureType;
+
+  /**
+   * Id of the map feature causing the step: "osm:way:1234", "osm:node:5678"
+   */
+  public String featureId;
+
+  /**
    * Is this step walking with a bike?
    */
   public Boolean walkingBike;

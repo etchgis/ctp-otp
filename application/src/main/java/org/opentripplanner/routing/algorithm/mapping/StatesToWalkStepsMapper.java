@@ -309,14 +309,18 @@ public class StatesToWalkStepsMapper {
       }
       // this is a continuation of the current step, if the step up to
       // now is not long enough, use this edge's direction.
-      if (current.relativeDirection() != RelativeDirection.DEPART && distance < MIN_STEP_DISTANCE) {
-        double thisAngle = DirectionUtils.getFirstAngle(geom);
-        RelativeDirection direction = RelativeDirection.calculate(
-          lastAngle,
-          thisAngle,
-          edge.isRoundabout()
-        );
-        current.withRelativeDirection(direction);
+      if (distance < MIN_STEP_DISTANCE) {
+        if (current.relativeDirection() != RelativeDirection.DEPART) {
+          double thisAngle = DirectionUtils.getFirstAngle(geom);
+          RelativeDirection direction = RelativeDirection.calculate(
+            lastAngle,
+            thisAngle,
+            edge.isRoundabout()
+          );
+          current.withRelativeDirection(direction);
+        }
+        current.withFeatureType(edge.getFeatureType());
+        current.withFeatureId(edge.getFeatureId());
       }
       distance += edge.getDistanceMeters();
     }
@@ -325,7 +329,7 @@ public class StatesToWalkStepsMapper {
     current
       .addDistance(edge.getDistanceMeters())
       .addStreetNotes(streetNotesService.getNotes(forwardState));
-    if (distance >= MIN_STEP_DISTANCE) {
+    if (edge.getDistanceMeters() >= MIN_STEP_DISTANCE) {
       lastAngle = DirectionUtils.getLastAngle(geom);
     }
 
@@ -627,6 +631,8 @@ public class StatesToWalkStepsMapper {
           forwardState.getPreferences().system().geoidElevation() ? -ellipsoidToGeoidDifference : 0
         )
       )
+      .withFeatureType(en.getFeatureType())
+      .withFeatureId(en.getFeatureId())
       .addStreetNotes(streetNotesService.getNotes(forwardState));
   }
 }

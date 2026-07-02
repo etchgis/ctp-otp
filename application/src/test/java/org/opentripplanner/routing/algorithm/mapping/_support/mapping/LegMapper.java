@@ -21,13 +21,15 @@ class LegMapper {
   private final WalkStepMapper walkStepMapper;
   private final PlaceMapper placeMapper;
   private final boolean addIntermediateStops;
+  private final int precision;
 
   private final I18NStringMapper i18NStringMapper;
 
-  public LegMapper(Locale locale, boolean addIntermediateStops) {
+  public LegMapper(Locale locale, boolean addIntermediateStops, int precision) {
     this.walkStepMapper = new WalkStepMapper(locale);
     this.placeMapper = new PlaceMapper(locale);
     this.addIntermediateStops = addIntermediateStops;
+    this.precision = precision;
     this.i18NStringMapper = new I18NStringMapper(locale);
   }
 
@@ -123,7 +125,7 @@ class LegMapper {
     if (addIntermediateStops) {
       api.intermediateStops = placeMapper.mapStopArrivals(domain.listIntermediateStops());
     }
-    api.legGeometry = EncodedPolyline.encode(domain.legGeometry());
+    api.legGeometry = EncodedPolyline.encode(domain.legGeometry(), precision);
     api.legElevation = mapElevation(domain.elevationProfile());
     api.steps = walkStepMapper.mapWalkSteps(domain.listWalkSteps());
 

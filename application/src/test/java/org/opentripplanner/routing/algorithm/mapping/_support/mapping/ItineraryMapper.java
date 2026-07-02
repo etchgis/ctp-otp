@@ -14,8 +14,8 @@ public class ItineraryMapper {
   private final LegMapper legMapper;
   private final FareMapper fareMapper;
 
-  public ItineraryMapper(Locale locale, boolean addIntermediateStops) {
-    this.legMapper = new LegMapper(locale, addIntermediateStops);
+  public ItineraryMapper(Locale locale, boolean addIntermediateStops, int precision) {
+    this.legMapper = new LegMapper(locale, addIntermediateStops, precision);
     this.fareMapper = new FareMapper(locale);
   }
 

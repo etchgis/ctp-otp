@@ -49,6 +49,8 @@ class WalkStepMapper {
     }
     api.elevation = mapElevation(domain.getElevationProfile());
     api.walkingBike = domain.isWalkingBike();
+    api.featureType = domain.getFeatureType();
+    api.featureId = domain.getFeatureId();
 
     return api;
   }

@@ -50,6 +50,9 @@ public final class WalkStep {
   private final ElevationProfile elevationProfile;
   private final boolean stayOn;
 
+  private final String featureType;
+  private final String featureId;
+
   private final List<Edge> edges;
 
   WalkStep(
@@ -67,6 +70,8 @@ public final class WalkStep {
     boolean stayOn,
     double angle,
     double distance,
+    String featureType,
+    String featureId,
     List<Edge> edges
   ) {
     this.distance = distance;
@@ -83,6 +88,8 @@ public final class WalkStep {
     this.entrance = entrance;
     this.elevationProfile = elevationProfile;
     this.stayOn = stayOn;
+    this.featureType = featureType;
+    this.featureId = featureId;
     this.edges = List.copyOf(Objects.requireNonNull(edges));
   }
 
@@ -182,6 +189,14 @@ public final class WalkStep {
    */
   public boolean isWalkingBike() {
     return walkingBike;
+  }
+
+  public String getFeatureType() {
+    return featureType;
+  }
+
+  public String getFeatureId() {
+    return featureId;
   }
 
   /**

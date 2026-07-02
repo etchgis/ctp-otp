@@ -46,7 +46,7 @@ public final class DirectionUtils {
       coord0 = line.getCoordinateN(i--);
     }
 
-    // Get angle of segment that is not super close to the end to avoid including
+    // Get angle of single segment instead of the entire end to avoid including
     // zags at the end of the line string.
     coord1 = line.getCoordinateN(i + 2);
 
@@ -74,12 +74,14 @@ public final class DirectionUtils {
     int i = 2;
     int minDistance = 10; // Meters
     while (
-      SphericalDistanceLibrary.fastDistance(coord0, coord1) < minDistance && i < line.getNumPoints()
+      // don't go all the way to the last point to avoid zags
+      SphericalDistanceLibrary.fastDistance(coord0, coord1) < minDistance &&
+      i < line.getNumPoints() - 1
     ) {
       coord1 = line.getCoordinateN(i++);
     }
 
-    // Get angle of segment that is not super close to the start to avoid including
+    // Get angle of single segment instead of the entire start to avoid including
     // zags at the start of the line string.
     coord0 = line.getCoordinateN(i - 2);
 

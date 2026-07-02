@@ -33,6 +33,8 @@ public class WalkStepBuilder {
    * Distance used for appending elevation profiles
    */
   private double distance = 0;
+  private String featureType;
+  private String featureId;
   private final List<Edge> edges = new ArrayList<>();
 
   WalkStepBuilder() {}
@@ -113,6 +115,16 @@ public class WalkStepBuilder {
     return this;
   }
 
+  public WalkStepBuilder withFeatureType(String type) {
+    this.featureType = type;
+    return this;
+  }
+
+  public WalkStepBuilder withFeatureId(String id) {
+    this.featureId = id;
+    return this;
+  }
+
   public ElevationProfile elevationProfile() {
     return elevationProfile;
   }
@@ -163,10 +175,6 @@ public class WalkStepBuilder {
     return startLocation;
   }
 
-  public boolean bogusName() {
-    return bogusName;
-  }
-
   public RelativeDirection relativeDirection() {
     return relativeDirection;
   }
@@ -187,6 +195,8 @@ public class WalkStepBuilder {
       stayOn,
       angle,
       distance,
+      featureType,
+      featureId,
       edges
     );
   }
