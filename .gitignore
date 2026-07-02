@@ -50,3 +50,39 @@ graph.obj
 
 # draw.io backup files
 *.svg.bkp
+
+# ctp local dev, deploy, and data scratch (not for the shared repo)
+/local-setup/
+/server-setup/
+/campus-shuttle-gtfs/
+/skids/
+/build-config.json
+/router-config.json
+/otp.js
+/test-ub.js
+/test-campus-shuttle.sh
+/add-shape-distances.js
+/expand-frequencies.js
+/convert_frequency_to_times.py
+/analyze-flex-results.py
+/trip-plan.js
+/trip-plan-graphql.js
+/trip-plan-query.graphql
+/trip-plan-variables.json
+/discover-agencies.graphql
+/discover-agencies-comprehensive.graphql
+/graphql_flex_response.json
+/graphql_flex_walk_response.json
+/graphql_stops_response.json
+/trip_response.json
+/scenarios.md
+/ban-modes-agencies-guide.md
+/pedestrian-street-routing-issue.md
+/ub-shuttle-graphql-queries.md
+/shuttle-service-analysis.md
+/shuttle-service-design.md
+/shuttle-service-graph-aware-mvp.md
+/shuttle-service-gtfs-flex-mvp.md
+/shuttle-service-mvp-design.md
+/shuttle-service-time-fix.md
+/shuttle-service-time-fix-v2.md
