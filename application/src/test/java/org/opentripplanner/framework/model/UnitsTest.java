@@ -14,8 +14,11 @@ class UnitsTest {
     assertEquals(1.12, Units.reluctance(1.1234));
     assertEquals(2.1, Units.reluctance(2.1234));
     assertEquals(10.0, Units.reluctance(10.1234));
+    // Values above MAX_RELUCTANCE (100) are clamped to prevent integer overflow
+    assertEquals(100.0, Units.reluctance(200.0));
+    assertEquals(100.0, Units.reluctance(1000.0));
     var ex = assertThrows(IllegalArgumentException.class, () -> Units.reluctance(-0.01));
-    assertEquals("The value is not in range[0.0, 1.7976931348623157E308]: -0.01", ex.getMessage());
+    assertEquals("The value is not in range[0.0, 100.0]: -0.01", ex.getMessage());
   }
 
   @Test

@@ -28,11 +28,21 @@ public final class Cost implements Serializable, Comparable<Cost> {
   }
 
   public static Cost costOfSeconds(int valueInTransitSeconds) {
-    return new Cost(valueInTransitSeconds * CENTI_FACTOR);
+    // Use long multiplication to detect overflow
+    long centiSeconds = (long) valueInTransitSeconds * CENTI_FACTOR;
+    if (centiSeconds > Integer.MAX_VALUE) {
+      centiSeconds = Integer.MAX_VALUE;
+    }
+    return new Cost((int) centiSeconds);
   }
 
   public static Cost costOfSeconds(double valueInTransitSeconds) {
-    return new Cost(IntUtils.round(valueInTransitSeconds * CENTI_FACTOR));
+    double centiSeconds = valueInTransitSeconds * CENTI_FACTOR;
+    // Clamp to max int value to prevent overflow (can happen with very high reluctance values)
+    if (centiSeconds > Integer.MAX_VALUE) {
+      centiSeconds = Integer.MAX_VALUE;
+    }
+    return new Cost(IntUtils.round(centiSeconds));
   }
 
   public static Cost costOfCentiSeconds(int valueInTransitCentiSeconds) {

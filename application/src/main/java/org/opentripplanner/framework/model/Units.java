@@ -30,14 +30,26 @@ public class Units {
   private Units() {}
 
   /**
-   * Reluctance of factor from zero(0) to positive infinitive.
+   * Maximum allowed reluctance value. Higher values can cause integer overflow in cost
+   * calculations when combined with long distances. With max walking distance of ~20km
+   * at 1 m/s (20,000s) and CENTI_FACTOR of 100, the max safe reluctance is about
+   * Integer.MAX_VALUE / (20,000 * 100), roughly 1073. We use 100 to provide a safety margin.
+   */
+  private static final double MAX_RELUCTANCE = 100.0;
+
+  /**
+   * Reluctance of factor from zero(0) to MAX_RELUCTANCE (100.0).
    * Number of decimals used are: 2 for values less than 2.0, 1 for values less than 10.0, and
    * zero for values above 10.0.
+   * <p>
+   * Higher values are clamped to MAX_RELUCTANCE to prevent integer overflow in cost calculations.
    * <p>
    * Unit: Human cost per second of actual time (scalar)
    */
   public static double reluctance(double value) {
-    return normalizedFactor(value, 0.0, Double.MAX_VALUE);
+    // Clamp to MAX_RELUCTANCE to prevent integer overflow in Cost calculations
+    double clamped = Math.min(value, MAX_RELUCTANCE);
+    return normalizedFactor(clamped, 0.0, MAX_RELUCTANCE);
   }
 
   /**

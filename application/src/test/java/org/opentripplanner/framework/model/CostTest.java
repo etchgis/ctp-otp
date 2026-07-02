@@ -137,4 +137,20 @@ class CostTest {
     assertEquals(List.of(c3, c7), Stream.of(c7, c3).sorted().toList());
     assertEquals(List.of(c3, c7, c8), Stream.of(c8, c3, c7).sorted().toList());
   }
+
+  @Test
+  void testOverflowProtection() {
+    // Values that would overflow int32 (> 2^31 / 100 = ~21.5 million seconds)
+    // should be clamped to Integer.MAX_VALUE instead of wrapping to negative
+    var largeDoubleValue = 30_000_000.0; // 30 million seconds
+    var cost = Cost.costOfSeconds(largeDoubleValue);
+    assertTrue(cost.toCentiSeconds() > 0, "Cost should not overflow to negative");
+    assertEquals(Integer.MAX_VALUE, cost.toCentiSeconds());
+
+    // Test integer version as well
+    var largeIntValue = 25_000_000; // 25 million seconds
+    var costInt = Cost.costOfSeconds(largeIntValue);
+    assertTrue(costInt.toCentiSeconds() > 0, "Cost should not overflow to negative");
+    assertEquals(Integer.MAX_VALUE, costInt.toCentiSeconds());
+  }
 }
