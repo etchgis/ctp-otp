@@ -1,0 +1,25 @@
+{
+  "name": "otp-flex-tests",
+  "version": "1.0.0",
+  "description": "Integration tests for OTP GTFS-Flex campus shuttle service using Transmodel GraphQL API",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node index.js",
+    "test:verbose": "node index.js --verbose",
+    "test:deployed": "node index.js --deployed",
+    "test:deployed:verbose": "node index.js --deployed --verbose",
+    "test:gtfs": "node index.js --gtfs",
+    "test:transmodel": "node index.js --transmodel",
+    "test:gtfs:deployed": "node index.js --gtfs --deployed",
+    "test:transmodel:deployed": "node index.js --transmodel --deployed",
+    "help": "node index.js --help"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "chalk": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

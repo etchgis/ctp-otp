@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# generated data and caches
+geocoding-cache.json
+geometry-*.geojson
+
+# local shuttle GTFS fixtures
+ub-shuttle-gtfs.zip
+ub-shuttle-gtfs/
+
+# local debug and diagnosis scripts, not part of the tracked suite
+capture-geometry.js
+test-ub-single.js
+
+# plan, proposal, and issue notes, kept local
+*-issue.md
+*-proposal.md
+*-guide.md
