@@ -5,6 +5,13 @@ import { resolveLocation } from './geocoder.js';
 // Cache for agency mappings
 let agencyMappingsCache = null;
 
+// Routing preferences applied when a scenario uses flex modes, to keep walking short
+// and prefer waiting over long walks.
+const FLEX_WALK_RELUCTANCE = 5.0;
+const FLEX_WAIT_RELUCTANCE = 0.8;
+const FLEX_TRANSFER_PENALTY = 300; // seconds (5 minutes)
+const FLEX_SEARCH_WINDOW = 60; // minutes
+
 // GTFS GraphQL query for agencies
 const AGENCIES_QUERY = `
 query {
@@ -240,10 +247,10 @@ export async function queryTrip(variables) {
       if (variables.modes && (variables.modes.accessMode === 'flexible' ||
           variables.modes.egressMode === 'flexible' ||
           variables.modes.directMode === 'flexible')) {
-        transformedVariables.walkReluctance = 5.0;
-        transformedVariables.waitReluctance = 0.8;  // Lower wait reluctance - waiting is better than walking
-        transformedVariables.transferPenalty = 300; // 5 minute penalty for transfers
-        transformedVariables.searchWindow = 60;    // Search within 60 minute window
+        transformedVariables.walkReluctance = FLEX_WALK_RELUCTANCE;
+        transformedVariables.waitReluctance = FLEX_WAIT_RELUCTANCE;
+        transformedVariables.transferPenalty = FLEX_TRANSFER_PENALTY;
+        transformedVariables.searchWindow = FLEX_SEARCH_WINDOW;
       }
     }
 
@@ -308,10 +315,10 @@ async function transformVariablesForGTFS(variables) {
   if (variables.modes && (variables.modes.accessMode === 'flexible' ||
       variables.modes.egressMode === 'flexible' ||
       variables.modes.directMode === 'flexible')) {
-    gtfsVariables.walkReluctance = variables.walkReluctance || 5.0;  // Use provided value or default
-    gtfsVariables.waitReluctance = 0.8;  // Lower wait reluctance - waiting is better than walking
-    gtfsVariables.transferPenalty = 300; // 5 minute penalty for transfers
-    gtfsVariables.maxSearchWindow = 60; // Search within 60 minute window
+    gtfsVariables.walkReluctance = variables.walkReluctance || FLEX_WALK_RELUCTANCE;
+    gtfsVariables.waitReluctance = FLEX_WAIT_RELUCTANCE;
+    gtfsVariables.transferPenalty = FLEX_TRANSFER_PENALTY;
+    gtfsVariables.maxSearchWindow = FLEX_SEARCH_WINDOW;
   } else if (variables.walkReluctance) {
     // Also set walk reluctance if explicitly provided, even without flex modes
     gtfsVariables.walkReluctance = variables.walkReluctance;

@@ -29,74 +29,6 @@ function decodePolyline(encoded) {
   return points;
 }
 
-/**
- * Score an itinerary using the same cost model as the mobile app (trip-plan.ts)
- * This allows consistent comparison between the test benchmark and the app.
- *
- * @param {Object} pattern - Trip pattern from OTP response
- * @param {string} requestDateTime - ISO datetime string of the requested time
- * @param {boolean} arriveBy - Whether this is an arrive-by query
- * @returns {Object} Scoring details
- */
-function scoreItinerary(pattern, requestDateTime, arriveBy = false) {
-  const requestTime = new Date(requestDateTime).getTime();
-  const startTime = new Date(pattern.aimedStartTime).getTime();
-  const endTime = new Date(pattern.aimedEndTime).getTime();
-  const duration = pattern.duration; // in seconds
-
-  // Calculate delay (time before/after requested time)
-  let delay;
-  if (arriveBy) {
-    delay = requestTime - endTime;
-  } else {
-    delay = startTime - requestTime;
-  }
-  delay = Math.round(delay / 1000); // convert to seconds
-
-  // Calculate time score: duration + delay/3
-  const timeScore = duration + delay / 3;
-
-  // Calculate transfer count from legs
-  const legs = pattern.legs || [];
-  const transitLegs = legs.filter(leg =>
-    leg.line || ['bus', 'rail', 'tram', 'metro'].includes((leg.mode || '').toLowerCase())
-  );
-  const transfers = Math.max(0, transitLegs.length - 1);
-
-  // Calculate eco harm based on modes
-  let ecoHarm = 0;
-  legs.forEach(leg => {
-    const mode = (leg.mode || '').toUpperCase();
-    const legDuration = leg.duration || 0;
-    if (mode === 'CAR' || mode === 'HAIL') {
-      ecoHarm += legDuration * 10 / 60;
-    } else if (mode === 'BUS') {
-      ecoHarm += legDuration * 1 / 60;
-    }
-  });
-
-  // Price calculation (simplified - no real fare data in test scenarios)
-  const price = 0;
-
-  // Final score: price + timeScore/60/10 + transferPenalty
-  // Transfer penalty: each transfer adds equivalent of 5 minutes (0.5 to score)
-  const transferPenalty = transfers * (5 / 10);
-  const score = price + timeScore / 60 / 10 + transferPenalty;
-
-  return {
-    delay,
-    timeScore,
-    transfers,
-    transferPenalty,
-    price,
-    score,
-    ecoHarm,
-    duration,
-    startTime,
-    endTime
-  };
-}
-
 export function analyzeResults(scenario, response) {
   const analysis = {
     scenarioId: scenario.id,
@@ -373,7 +305,7 @@ export function analyzeResults(scenario, response) {
 
   // Determine overall success
   analysis.success = analysis.errors.length === 0 &&
-    (scenario.expected.hasFlexLeg ? analysis.flexLegsFound > 0 : true);
+    (scenario.expected?.hasFlexLeg ? analysis.flexLegsFound > 0 : true);
 
   return analysis;
 }

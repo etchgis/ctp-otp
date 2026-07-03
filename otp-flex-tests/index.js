@@ -271,6 +271,9 @@ async function main() {
   });
 
   console.log(chalk.blue('\n🏁 Test run complete!\n'));
+
+  // Exit non-zero when any scenario failed so the suite can gate CI.
+  process.exit(failed > 0 ? 1 : 0);
 }
 
 // Run the tests
